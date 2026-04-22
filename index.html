@@ -25,3 +25,587 @@
             width: 100%; 
             padding: 14px; 
             font-family: monospace; 
+            font-size: 0.85rem; 
+            border: 2px solid #e2d2a0; 
+            border-radius: 28px; 
+            background: #fefcf5; 
+            resize: vertical; 
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .btn-group { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        button { 
+            flex: 1; 
+            background: #477e3c; 
+            border: none; 
+            padding: 12px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            color: white; 
+            border-radius: 60px; 
+            cursor: pointer; 
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+        button:active { transform: scale(0.97); background: #366b2c; }
+        .reset-btn { background: #b87c42; }
+        .sort-btn { background: #2c6e28; }
+        
+        .local-time-panel {
+            background: linear-gradient(135deg, #5f9e4b 0%, #477e3c 100%);
+            border-radius: 28px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            cursor: pointer;
+        }
+        .local-time-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        .local-date-value {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            text-align: right;
+        }
+        
+        .stats { 
+            background: transparent; 
+            padding: 0; 
+            margin-bottom: 8px; 
+            text-align: right; 
+            font-weight: 400; 
+            font-size: 0.7rem; 
+            color: #8a7a5a; 
+        }
+        .zone-list { display: flex; flex-direction: column; gap: 12px; }
+        .zone-item { 
+            background: #f2ecda; 
+            border-radius: 28px; 
+            overflow: hidden; 
+            border-left: 6px solid #5f9e4b; 
+        }
+        .zone-header { 
+            display: flex; 
+            align-items: center; 
+            padding: 10px 16px; 
+            background: #faf3df; 
+            cursor: pointer; 
+            font-weight: 700; 
+            font-size: 1rem; 
+            flex-wrap: wrap; 
+            gap: 6px; 
+        }
+        .zone-name { 
+            color: #2a5c24; 
+            margin-right: 2px;
+        }
+        .crop-hour { 
+            background: #477e3c; 
+            color: white; 
+            padding: 4px 8px; 
+            border-radius: 40px; 
+            font-size: 0.65rem; 
+            font-weight: bold;
+        }
+        .next-water { 
+            background: #ffd966; 
+            color: #2a5c24; 
+            padding: 4px 8px; 
+            border-radius: 40px; 
+            font-size: 0.65rem; 
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            cursor: pointer;
+        }
+        .next-water.done {
+            background: #2ecc71;
+            color: #2a5c24;
+            font-weight: bold;
+        }
+        .zone-badge { 
+            background: #87ceeb; 
+            color: #2a5c24; 
+            padding: 4px 8px; 
+            border-radius: 40px; 
+            font-size: 0.65rem; 
+            font-weight: bold;
+        }
+        .zone-date-badge {
+            background: #e7d2b0;
+            color: #6b4c24;
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+        .zone-detail { 
+            padding: 0 16px 12px; 
+            display: none; 
+            border-top: 1px solid #ddd0ae; 
+            background: #fffcf0; 
+        }
+        .zone-detail.open { display: block; }
+        
+        .water-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+        }
+        .water-time-text {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #2a5c24;
+            min-width: 65px;
+        }
+        .water-bar {
+            flex: 1;
+            height: 8px;
+            background: #ece7d7;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .water-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a90d9, #5ab0ff);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+        .water-percent {
+            font-weight: bold;
+            color: #2a5c24;
+            font-size: 0.85rem;
+            min-width: 45px;
+            text-align: right;
+        }
+        
+        .water-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .water-card {
+            background: white;
+            border-radius: 16px;
+            padding: 12px 14px;
+            border-left: 4px solid #5f9e4b;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .water-card.kill {
+            border-left-color: #ff6b6b;
+            background: #fff3cd;
+        }
+        .water-card.current {
+            border-left-color: #4a90d9;
+            background: #e8f0fe;
+            box-shadow: 0 2px 8px rgba(74,144,217,0.2);
+        }
+        
+        .water-left {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .water-right {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            align-items: flex-end;
+        }
+        
+        .water-title {
+            font-weight: 700;
+            color: #2a5c24;
+            font-size: 0.9rem;
+        }
+        .wait-badge {
+            background: #4a90d9;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            align-self: flex-start;
+        }
+        .wait-badge.urgent {
+            background: #ff6b6b;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .water-big-time {
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #1b4a16;
+            line-height: 1.2;
+        }
+        
+        .water-amount {
+            color: #5f9e4b;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        .water-reduce {
+            color: #d4a017;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .footnote { 
+            font-size: 0.65rem; 
+            text-align: center; 
+            color: #9e8a60; 
+            margin-top: 16px; 
+            padding-top: 12px; 
+            border-top: 1px solid #e7dcbe; 
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <div class="content">
+            <div class="local-time-panel">
+                <div class="local-time-value" id="localTime">--:--:--</div>
+                <div>
+                    <div class="local-date-value" id="localDate">----年--月--日</div>
+                    <div class="local-date-value" id="localWeekday">星期-</div>
+                </div>
+            </div>
+            
+            <textarea id="rawData" rows="6" wrap="soft" placeholder="粘贴数据或从链接自动加载"></textarea>
+            <div class="btn-group">
+                <button id="calcBtn">计算</button>
+                <button id="sortBtn" class="sort-btn">浇水时间</button>
+                <button id="clearBtn" class="reset-btn">清空</button>
+            </div>
+            <div id="resultArea"><div class="stats"></div></div>
+            <div class="footnote">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const CROP_CONFIG = {
+  1:  { name: '1小时',  fullWater: 20,   reduce: 5 },
+  8:  { name: '8小时',  fullWater: 160,  reduce: 40 },
+  16: { name: '16小时', fullWater: 320,  reduce: 80 },
+  32: { name: '32小时', fullWater: 640,  reduce: 160 }
+};
+
+let currentZones = [];
+let zoneRealData = {};
+let now = new Date();
+
+function updateLocalTime() {
+  now = new Date();
+  let h = now.getHours().toString().padStart(2, '0');
+  let m = now.getMinutes().toString().padStart(2, '0');
+  let s = now.getSeconds().toString().padStart(2, '0');
+  let Y = now.getFullYear();
+  let M = (now.getMonth()+1).toString().padStart(2, '0');
+  let D = now.getDate().toString().padStart(2, '0');
+  let wd = '日一二三四五六'[now.getDay()];
+  document.getElementById('localTime').textContent = `${h}:${m}:${s}`;
+  document.getElementById('localDate').textContent = `${Y}年${M}月${D}`;
+  document.getElementById('localWeekday').textContent = `星期${wd}`;
+}
+
+// 解析一条行：取出 区名 / 成熟串 / 缺水串 / 剩余 / 基准月日
+function parseLineWithDate(line) {
+    // 匹配格式：144区：T02:21┆T03:19 (05h19m)4/24
+    let m = line.match(/^(.+?区)：(.+?)┆(.+?)\s*(\(.+?\))\s*(\d+\/\d+)?/);
+    if (!m) return null;
+
+    let name = m[1];
+    let mtRaw = m[2].trim();
+    let dtRaw = m[3].trim();
+    let rem = m[4];
+    let baseMD = m[5] || "";
+
+    // 解析成熟串 Txx:xx → 偏移+时分
+    let mt = parseTimeWithPrefix(mtRaw);
+    // 解析缺水串 Txx:xx → 偏移+时分
+    let dt = parseTimeWithPrefix(dtRaw);
+
+    return {
+        name, rem, baseMD,
+        mtHm: mt.hm, mtOffset: mt.offset,
+        dtHm: dt.hm, dtOffset: dt.offset
+    };
+}
+
+// 解析 T/R + HH:mm
+function parseTimeWithPrefix(s) {
+    s = s.trim().toUpperCase();
+    let offset = 0;
+    if (s.startsWith('T')) offset = 1;
+    else if (s.startsWith('R')) offset = 2;
+    let hm = s.replace(/^[TR]/, '');
+    return { offset, hm };
+}
+
+// 根据 基准月日 + 偏移 + HH:mm 算出绝对时间
+function getAbsDate(baseMD, offset, hmStr) {
+    let base = new Date();
+    // 有基准月日就覆盖月日
+    if (baseMD) {
+        let [m, d] = baseMD.split('/').map(Number);
+        base.setMonth(m - 1);
+        base.setDate(d);
+    }
+    // 时分
+    let [h, mi] = hmStr.split(':').map(Number);
+    base.setHours(h, mi, 0, 0);
+    // 加上偏移天数
+    base.setDate(base.getDate() + offset);
+    return base;
+}
+
+function toHm(m) {
+  m = Math.max(0, m);
+  let h = Math.floor(m / 60);
+  let mm = Math.floor(m % 60);
+  return `${h}h${mm}m`;
+}
+
+function parseRemaining(str) {
+  let match = str.match(/\((\d+)h(\d+)m\)/i) || str.match(/\((\d+)m\)/i) || str.match(/\((\d+)h\)/i);
+  if (!match) return 0;
+  if (match[1] && match[2]) return parseInt(match[1])*60 + parseInt(match[2]);
+  if (match[1] && str.includes('h')) return parseInt(match[1])*60;
+  return parseInt(match[1]);
+}
+
+function getCrop(r) {
+  if (r > 320) return CROP_CONFIG[32];
+  if (r > 160) return CROP_CONFIG[16];
+  if (r > 20) return CROP_CONFIG[8];
+  return CROP_CONFIG[1];
+}
+
+function parseLines(text) {
+  let zones = [];
+  let lines = text.split(/\n/).filter(l => l.trim() !== '' && !l.includes('∴') && !l.includes('————'));
+  for (let line of lines) {
+    let z = parseLineWithDate(line);
+    if (z) zones.push(z);
+  }
+  return zones;
+}
+
+function calculateRealPlan(M, R, W, fullReduce) {
+  let plan = [];
+  let t = 0, cm = M, cr = R;
+  while (true) {
+    let K = Math.floor((4 * cm - W + cr) / 5);
+    K = Math.max(0, K);
+    let kill = t + K;
+    let dry = t + cr;
+    if (kill <= dry) {
+      let add = W - cr + K;
+      let red = Math.floor(add / 4);
+      plan.push({ type: 'kill', t: kill, add, red });
+      break;
+    }
+    plan.push({ type: 'water', t: dry, add: W, red: fullReduce });
+    cm -= fullReduce + (dry - t);
+    cr = W; t = dry;
+    if (plan.length > 20) break;
+  }
+  return plan;
+}
+
+function computeZoneReal(zone) {
+  let nowMs = now.getTime();
+
+  // 缺水绝对时间
+  let dryDate = getAbsDate(zone.baseMD, zone.dtOffset, zone.dtHm);
+  let dryMs = dryDate.getTime();
+
+  let R0 = parseRemaining(zone.rem);
+  let crop = getCrop(R0);
+  let W = crop.fullWater;
+  let fullReduce = crop.reduce;
+
+  let fullTimeMs = dryMs - W * 60 * 1000;
+  let elapsedMs = nowMs - fullTimeMs;
+  let currentWaterSec = Math.max(0, W * 60 - elapsedMs / 1000);
+  let currentWaterMin = currentWaterSec / 60;
+  let pct = Math.min(100, Math.max(0, currentWaterMin / W * 100));
+
+  // 成熟绝对时间
+  let matureDate = getAbsDate(zone.baseMD, zone.mtOffset, zone.mtHm);
+  let M = Math.max(0, (matureDate.getTime() - nowMs) / 60000);
+  
+  let initR = Math.min(W, Math.max(0, currentWaterMin));
+  let steps = calculateRealPlan(M, initR, W, fullReduce);
+
+  let events = steps.map(e => {
+    let absMs = nowMs + e.t * 60 * 1000;
+    let d = new Date(absMs);
+    let hh = d.getHours().toString().padStart(2, '0');
+    let mm = d.getMinutes().toString().padStart(2, '0');
+    return { ...e, timeStr: `${hh}:${mm}`, absMs };
+  });
+
+  let future = events.filter(e => e.absMs > nowMs);
+  let next = future[0];
+
+  return {
+    crop, W, currentWaterMin, pct,
+    events, future, next, count: future.length,
+    baseMD: zone.baseMD
+  };
+}
+
+function render() {
+  let zones = currentZones;
+  if (!zones.length) {
+    document.getElementById('resultArea').innerHTML = `<div class="stats"></div><div style="text-align:center;padding:20px;color:#888;">暂无数据</div>`;
+    return;
+  }
+  let html = `<div class="stats">共${zones.length}块地</div><div class="zone-list">`;
+  zones.forEach((z, i) => {
+    let id = `z${i}`;
+    let d = computeZoneReal(z);
+    zoneRealData[id] = d;
+
+    let nextStr = d.next ? d.next.timeStr : '已完成';
+    let doneClass = d.next ? '' : 'done';
+    let urgent = d.next && (d.next.absMs - now.getTime()) < 30 * 60 * 1000;
+    let badge = urgent ? '<span style="background:red;color:white;padding:2px 6px;border-radius:12px;font-size:10px;">急</span>' : '';
+    let dateBadge = d.baseMD ? `<span class="zone-date-badge">${d.baseMD}</span>` : '';
+
+    html += `
+    <div class="zone-item">
+      <div class="zone-header" onclick="toggle('${id}')">
+        <span class="zone-name">${z.name}</span>
+        ${dateBadge}
+        <span class="crop-hour">${d.crop.name.replace('小时','')}H</span>
+        <span class="next-water ${doneClass}">${nextStr}</span>
+        <span class="zone-badge">${d.count}次</span>
+        ${badge}
+      </div>
+      <div id="${id}" class="zone-detail">
+        <div class="water-progress">
+          <span id="wtext-${id}" class="water-time-text">--</span>
+          <div class="water-bar"><div id="wbar-${id}" class="water-bar-fill"></div></div>
+          <span id="wpct2-${id}" class="water-percent">--</span>
+        </div>
+        <div class="water-timeline">`;
+
+    d.events.forEach(e => {
+      let isCurr = d.next && e.absMs === d.next.absMs;
+      let cls = e.type === 'kill' ? 'kill' : '';
+      if (isCurr) cls += ' current';
+      let title = e.type === 'kill' ? '斩杀' : '浇水';
+      
+      html += `
+        <div class="water-card ${cls}">
+          <div class="water-left">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="water-title">${title}</span>
+              ${isCurr ? '<span class="wait-badge urgent">下次</span>' : ''}
+            </div>
+            <div class="water-big-time">${e.timeStr}</div>
+          </div>
+          <div class="water-right">
+            <span class="water-amount">💧${toHm(e.add)}</span>
+            <span class="water-reduce">➖${toHm(e.red)}</span>
+          </div>
+        </div>`;
+    });
+
+    html += `</div></div></div>`;
+  });
+  html += '</div>';
+  document.getElementById('resultArea').innerHTML = html;
+}
+
+function refreshWaterValues() {
+  for (let id in zoneRealData) {
+    let idx = parseInt(id.replace('z',''));
+    let d = computeZoneReal(currentZones[idx]);
+    let wt = document.getElementById(`wtext-${id}`);
+    let wp2 = document.getElementById(`wpct2-${id}`);
+    let br = document.getElementById(`wbar-${id}`);
+    if (wt) wt.textContent = toHm(d.currentWaterMin);
+    if (wp2) wp2.textContent = Math.round(d.pct) + '%';
+    if (br) br.style.width = d.pct + '%';
+  }
+}
+
+window.toggle = id => document.getElementById(id).classList.toggle('open');
+
+function sortByNext() {
+  if (!currentZones.length) return;
+  currentZones.sort((a, b) => {
+    let da = computeZoneReal(a);
+    let db = computeZoneReal(b);
+    let ta = da.next ? da.next.absMs : 9e15;
+    let tb = db.next ? db.next.absMs : 9e15;
+    return ta - tb;
+  });
+  render();
+}
+
+document.getElementById('calcBtn').onclick = () => {
+  currentZones = parseLines(document.getElementById('rawData').value);
+  render();
+};
+
+document.getElementById('sortBtn').onclick = sortByNext;
+document.getElementById('clearBtn').onclick = () => {
+  document.getElementById('rawData').value = '';
+  currentZones = [];
+  zoneRealData = {};
+  document.getElementById('resultArea').innerHTML = '<div class="stats"></div>';
+};
+
+// 自动从URL加载
+window.addEventListener('load', () => {
+  updateLocalTime();
+  const params = new URLSearchParams(window.location.search);
+  let data = params.get('data');
+  if (data) {
+    data = decodeURIComponent(data);
+    document.getElementById('rawData').value = data;
+    currentZones = parseLines(data);
+    render();
+  }
+});
+
+setInterval(() => {
+  updateLocalTime();
+  refreshWaterValues();
+}, 1000);
+</script>
+</body>
+</html>
