@@ -68,6 +68,7 @@
             align-items: center;
             color: white;
             box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+            cursor: pointer;
         }
         .local-time-value {
             font-size: 2rem;
@@ -130,6 +131,7 @@
             display: flex;
             align-items: center;
             gap: 2px;
+            cursor: pointer;
         }
         .next-water.done {
             background: #2ecc71;
@@ -280,7 +282,7 @@
 <div class="container">
     <div class="card">
         <div class="content">
-            <div class="local-time-panel">
+            <div class="local-time-panel" onclick="goToTargetUrl()">
                 <div class="local-time-value" id="localTime">--:--:--</div>
                 <div>
                     <div class="local-date-value" id="localDate">----年--月--日</div>
@@ -288,7 +290,7 @@
                 </div>
             </div>
             
-            <textarea id="rawData" rows="6" wrap="soft" placeholder="粘贴你的分区数据"></textarea>
+            <textarea id="rawData" rows="6" wrap="soft" placeholder="点击时间可跳转手动计算"></textarea>
             <div class="btn-group">
                 <button id="calcBtn">计算</button>
                 <button id="sortBtn" class="sort-btn">浇水时间</button>
@@ -296,9 +298,6 @@
             </div>
             <div id="resultArea"><div class="stats"></div></div>
             <div class="footnote">
-                <!-- 💧 32H→10h40m | 16H→5h20m | 8H→2h40m | 1H→20m<br>
-                ⚡ 减少时间 = 加水量 ÷ 4<br>
-                📅 T=明天  R=后天 -->
             </div>
         </div>
     </div>
@@ -316,6 +315,15 @@ let currentZones = [];
 let zoneRealData = {};
 let now = new Date();
 
+// ========== 在这里改成你自己的网址 ==========
+const TARGET_URL = "https://ikuun.de5.net/1.html";
+// ==========================================
+
+function goToTargetUrl() {
+  window.open(TARGET_URL, '_blank'); // 新标签页打开
+  // window.location.href = TARGET_URL; // 如需当前页跳转，用这行，删掉上面那行
+}
+
 // 自动解析URL + 清理多余空行
 function loadDataFromUrl() {
   try {
@@ -328,11 +336,10 @@ function loadDataFromUrl() {
     
     data = data.replace(/â/g, '┆').replace(/ï¼/g, '：');
     
-    // 核心：去掉所有多余空行，只保留一行分隔
     data = data
       .replace(/(\d+区)/g, '\n$1')
       .replace(/(————+)/g, '\n$1\n')
-      .replace(/\n\s*\n/g, '\n')  // 多个空行变一个
+      .replace(/\n\s*\n/g, '\n')
       .trim();
 
     document.getElementById('rawData').value = data;
