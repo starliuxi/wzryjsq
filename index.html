@@ -121,6 +121,9 @@
             font-size: 0.65rem; 
             font-weight: bold;
         }
+        .crop-hour.override {
+            background: #e67e22;
+        }
         .next-water { 
             background: #ffd966; 
             color: #2a5c24; 
@@ -287,13 +290,16 @@
     </style>
 </head>
 <body>
-<div class="local-time-panel" onclick="location.href='http://ikuun.de5.net/1.html'">
-    <div class="local-time-value" id="localTime">--:--:--</div>
-    <div>
-        <div class="local-date-value" id="localDate">----年--月--日</div>
-        <div class="local-date-value" id="localWeekday">星期-</div>
-    </div>
-</div>
+<div class="container">
+    <div class="card">
+        <div class="content">
+            <div class="local-time-panel" onclick="location.href='http://ikuun.de5.net/1.html'">
+                <div class="local-time-value" id="localTime">--:--:--</div>
+                <div>
+                    <div class="local-date-value" id="localDate">----年--月--日</div>
+                    <div class="local-date-value" id="localWeekday">星期-</div>
+                </div>
+            </div>
             
             <textarea id="rawData" rows="6" wrap="soft" placeholder="粘贴数据或从链接自动加载"></textarea>
             <div class="btn-group">
@@ -334,10 +340,11 @@ function updateLocalTime() {
   document.getElementById('localWeekday').textContent = `星期${wd}`;
 }
 
-// 解析一条行：取出 区名 / 成熟串 / 缺水串 / 剩余 / 基准月日
+// 解析一条行：取出 区名 / 成熟串 / 缺水串 / 剩余 / 基准月日 / [可选]作物类型覆盖
 function parseLineWithDate(line) {
-    // 匹配格式：144区：T02:21┆T03:19 (05h19m)4/24
-    let m = line.match(/^(.+?区)：(.+?)┆(.+?)\s*(\(.+?\))\s*(\d+\/\d+)?/);
+    // 匹配格式：001区：06:00┆04:17 (2h0m)5/2 16
+    // 最后可选的数字为作物类型覆盖（1、8、16、32）
+    let m = line.match(/^(.+?区)：(.+?)┆(.+?)\s*(\(.+?\))\s*(\d+\/\d+)?\s*(\d+)?$/);
     if (!m) return null;
 
     let name = m[1];
@@ -345,6 +352,12 @@ function parseLineWithDate(line) {
     let dtRaw = m[3].trim();
     let rem = m[4];
     let baseMD = m[5] || "";
+    let cropOverride = m[6] ? parseInt(m[6]) : null;
+
+    // 验证作物类型覆盖值是否有效
+    if (cropOverride && ![1, 8, 16, 32].includes(cropOverride)) {
+        cropOverride = null;
+    }
 
     // 解析成熟串 Txx:xx → 偏移+时分
     let mt = parseTimeWithPrefix(mtRaw);
@@ -352,7 +365,7 @@ function parseLineWithDate(line) {
     let dt = parseTimeWithPrefix(dtRaw);
 
     return {
-        name, rem, baseMD,
+        name, rem, baseMD, cropOverride,
         mtHm: mt.hm, mtOffset: mt.offset,
         dtHm: dt.hm, dtOffset: dt.offset
     };
@@ -400,7 +413,12 @@ function parseRemaining(str) {
   return parseInt(match[1]);
 }
 
-function getCrop(r) {
+function getCrop(r, cropOverride) {
+  // 如果有作物类型覆盖，直接使用覆盖值
+  if (cropOverride && CROP_CONFIG[cropOverride]) {
+    return CROP_CONFIG[cropOverride];
+  }
+  // 否则根据剩余时间判断
   if (r > 320) return CROP_CONFIG[32];
   if (r > 160) return CROP_CONFIG[16];
   if (r > 20) return CROP_CONFIG[8];
@@ -447,7 +465,7 @@ function computeZoneReal(zone) {
   let dryMs = dryDate.getTime();
 
   let R0 = parseRemaining(zone.rem);
-  let crop = getCrop(R0);
+  let crop = getCrop(R0, zone.cropOverride);
   let W = crop.fullWater;
   let fullReduce = crop.reduce;
 
@@ -478,7 +496,8 @@ function computeZoneReal(zone) {
   return {
     crop, W, currentWaterMin, pct,
     events, future, next, count: future.length,
-    baseMD: zone.baseMD
+    baseMD: zone.baseMD,
+    cropOverride: zone.cropOverride
   };
 }
 
@@ -499,13 +518,15 @@ function render() {
     let urgent = d.next && (d.next.absMs - now.getTime()) < 30 * 60 * 1000;
     let badge = urgent ? '<span style="background:red;color:white;padding:2px 6px;border-radius:12px;font-size:10px;">急</span>' : '';
     let dateBadge = d.baseMD ? `<span class="zone-date-badge">${d.baseMD}</span>` : '';
+    // 如果有作物类型覆盖，使用特殊样式
+    let cropOverrideClass = d.cropOverride ? ' override' : '';
 
     html += `
     <div class="zone-item">
       <div class="zone-header" onclick="toggle('${id}')">
         <span class="zone-name">${z.name}</span>
         ${dateBadge}
-        <span class="crop-hour">${d.crop.name.replace('小时','')}H</span>
+        <span class="crop-hour${cropOverrideClass}">${d.crop.name.replace('小时','')}H</span>
         <span class="next-water ${doneClass}">${nextStr}</span>
         <span class="zone-badge">${d.count}次</span>
         ${badge}
@@ -549,13 +570,16 @@ function render() {
 function refreshWaterValues() {
   for (let id in zoneRealData) {
     let idx = parseInt(id.replace('z',''));
-    let d = computeZoneReal(currentZones[idx]);
-    let wt = document.getElementById(`wtext-${id}`);
-    let wp2 = document.getElementById(`wpct2-${id}`);
-    let br = document.getElementById(`wbar-${id}`);
-    if (wt) wt.textContent = toHm(d.currentWaterMin);
-    if (wp2) wp2.textContent = Math.round(d.pct) + '%';
-    if (br) br.style.width = d.pct + '%';
+    if (idx >= 0 && idx < currentZones.length) {
+      let d = computeZoneReal(currentZones[idx]);
+      zoneRealData[id] = d;
+      let wt = document.getElementById(`wtext-${id}`);
+      let wp2 = document.getElementById(`wpct2-${id}`);
+      let br = document.getElementById(`wbar-${id}`);
+      if (wt) wt.textContent = toHm(d.currentWaterMin);
+      if (wp2) wp2.textContent = Math.round(d.pct) + '%';
+      if (br) br.style.width = d.pct + '%';
+    }
   }
 }
 
