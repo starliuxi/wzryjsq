@@ -3,16 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS DNS屏蔽 & 应用下载</title>
+    <title>iOS DNS屏蔽证书 + 签名应用安装</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
             background: #f5f5f7;
             padding: 60px 20px;
         }
-        .container { max-width: 360px; margin: 0 auto; }
-        h1 { text-align: center; color: #333; font-size: 22px; margin-bottom: 40px; }
+        .container {
+            max-width: 360px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 22px;
+            margin-bottom: 40px;
+        }
         .btn {
             display: block;
             text-decoration: none;
@@ -21,10 +33,14 @@
             border-radius: 14px;
             text-align: center;
             font-size: 17px;
-            color: white;
+            color: #fff;
         }
-        .cert-btn { background-color: #34c759; }
-        .ipa-btn { background-color: #007aff; }
+        .cert {
+            background: #34c759;
+        }
+        .install {
+            background: #007aff;
+        }
         .tip {
             margin-top: 40px;
             font-size: 13px;
@@ -36,47 +52,23 @@
 </head>
 <body>
     <div class="container">
-        <h1>iOS 安装工具</h1>
+        <h1>iOS 一键安装</h1>
 
-        <!-- DNS屏蔽证书按钮，固定不变 -->
-        <a href="tongyong.mobileconfig" class="btn cert-btn">
+        <!-- DNS屏蔽证书 -->
+        <a href="tongyong.mobileconfig" class="btn cert">
             🔐 第一步：安装 DNS屏蔽证书
         </a>
 
-        <!-- 这里会自动生成所有ipa的下载按钮 -->
-        <div id="ipaList"></div>
+        <!-- 你指定的itms-services在线安装签名软件 -->
+        <a href="itms-services:///?action=download-manifest&url=https://iosxb.cn/xin/2.plist" class="btn install">
+            📦 第二步：安装签名应用
+        </a>
 
         <div class="tip">
-            请用 iPhone Safari 打开此页面<br>
-            优先安装【DNS屏蔽证书】<br>
-            安装后前往 设置 → 通用 → VPN与设备管理 信任<br>
-            再下载IPA安装包使用安装器安装
+            请用 iPhone Safari 打开<br>
+            先安装DNS屏蔽证书并信任<br>
+            再点击安装签名应用即可
         </div>
     </div>
-
-    <script>
-        // ========== 这里只需要填你的ipa文件名，其他不用改 ==========
-        const ipaFiles = [
-            // 例子：
-            "ESign_轻松签_4.8.2.ipa",
-            "uz.ipa",
-            // "又一个软件.ipa"
-        ];
-        // =========================================================
-
-        const baseUrl = location.href.substring(0, location.href.lastIndexOf('/') + 1);
-        const ipaListEl = document.getElementById('ipaList');
-
-        // 自动生成所有ipa的下载按钮
-        ipaFiles.forEach(fileName => {
-            const btn = document.createElement('a');
-            btn.href = baseUrl + fileName;
-            btn.className = 'btn ipa-btn';
-            // 自动从文件名里提取软件名（去掉版本号、特殊字符）
-            let appName = fileName.replace(/\.ipa$/i, '').split('@')[0].split('_').join(' ');
-            btn.textContent = `📦 下载 ${appName}`;
-            ipaListEl.appendChild(btn);
-        });
-    </script>
 </body>
 </html>
