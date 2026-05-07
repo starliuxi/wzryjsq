@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iOS DNS屏蔽证书 + 签名应用安装</title>
+    <title>iOS 证书大全 + 应用安装</title>
     <style>
         * {
             margin: 0;
@@ -35,10 +35,16 @@
             font-size: 17px;
             color: #fff;
         }
-        .cert {
+        /* DNS屏蔽证书 绿色 */
+        .btn-config {
             background: #34c759;
         }
-        .install {
+        /* 企业证书ZIP 橙色 */
+        .btn-zip {
+            background: #ff9500;
+        }
+        /* 在线安装APP 蓝色 */
+        .btn-install {
             background: #007aff;
         }
         .tip {
@@ -52,22 +58,28 @@
 </head>
 <body>
     <div class="container">
-        <h1>iOS 一键安装</h1>
+        <h1>iOS 证书 & 应用安装</h1>
 
-        <!-- DNS屏蔽证书 -->
-        <a href="tongyong.mobileconfig" class="btn cert">
-            🔐 第一步：安装 DNS屏蔽证书
+        <!-- 1. DNS屏蔽证书 -->
+        <a href="tongyong.mobileconfig" class="btn btn-config">
+            🔐 安装 DNS屏蔽证书
         </a>
 
-        <!-- 你指定的itms-services在线安装签名软件 -->
-        <a href="itms-services:///?action=download-manifest&url=https://iosxb.cn/xin/2.plist" class="btn install">
-            📦 第二步：安装签名应用
+        <!-- 2. 企业证书压缩包 -->
+        <a href="证书(ChinaPower).zip" class="btn btn-zip">
+            📁 下载 ChinaPower企业证书
+        </a>
+
+        <!-- 3. 在线安装签名软件 -->
+        <a href="itms-services:///?action=download-manifest&url=https://iosxb.cn/xin/2.plist" class="btn btn-install">
+            📦 一键安装签名应用
         </a>
 
         <div class="tip">
             请用 iPhone Safari 打开<br>
             先安装DNS屏蔽证书并信任<br>
-            再点击安装签名应用即可
+            可下载企业证书备用<br>
+            最后点击安装签名应用
         </div>
     </div>
 </body>
