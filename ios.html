@@ -5,26 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>iOS DNS屏蔽 & 应用下载</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
             background: #f5f5f7;
             padding: 60px 20px;
         }
-        .container {
-            max-width: 360px;
-            margin: 0 auto;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            font-size: 22px;
-            margin-bottom: 40px;
-        }
+        .container { max-width: 360px; margin: 0 auto; }
+        h1 { text-align: center; color: #333; font-size: 22px; margin-bottom: 40px; }
         .btn {
             display: block;
             text-decoration: none;
@@ -35,12 +23,8 @@
             font-size: 17px;
             color: white;
         }
-        .cert-btn {
-            background-color: #34c759;
-        }
-        .ipa-btn {
-            background-color: #007aff;
-        }
+        .cert-btn { background-color: #34c759; }
+        .ipa-btn { background-color: #007aff; }
         .tip {
             margin-top: 40px;
             font-size: 13px;
@@ -54,12 +38,12 @@
     <div class="container">
         <h1>iOS 安装工具</h1>
 
-        <!-- DNS屏蔽证书按钮（固定） -->
+        <!-- DNS屏蔽证书按钮，固定不变 -->
         <a href="tongyong.mobileconfig" class="btn cert-btn">
             🔐 第一步：安装 DNS屏蔽证书
         </a>
 
-        <!-- 自动生成IPA列表的容器 -->
+        <!-- 这里会自动生成所有ipa的下载按钮 -->
         <div id="ipaList"></div>
 
         <div class="tip">
@@ -71,48 +55,28 @@
     </div>
 
     <script>
-        // 获取当前页面的基础路径
+        // ========== 这里只需要填你的ipa文件名，其他不用改 ==========
+        const ipaFiles = [
+            // 例子：
+            "ESign_轻松签_4.8.2.ipa",
+            "uz.ipa",
+            // "又一个软件.ipa"
+        ];
+        // =========================================================
+
         const baseUrl = location.href.substring(0, location.href.lastIndexOf('/') + 1);
         const ipaListEl = document.getElementById('ipaList');
 
-        // 尝试读取当前目录下的文件列表（GitHub Pages 环境下的自动发现逻辑）
-        // 说明：GitHub Pages 不支持直接列目录，这里用一个通用的自动发现方式
-        // 你只需要把ipa文件放同目录，用下面的方式自动识别
-        async function autoDetectIpaFiles() {
-            // 方案：如果你能手动提供文件名列表，这里可以自动生成按钮
-            // 这里提供两种方式：
-            // 方式一：手动添加文件名（你可以直接在下面写死）
-            const ipaFiles = [
-                // 示例：把你的ipa文件名写在这里
-                // "软件A.ipa",
-                // "软件B.ipa",
-                // "软件C.ipa"
-            ];
-
-            // 方式二：如果你不想写死，也可以让用户直接下载任意ipa
-            // 下面这段代码会生成一个通用的提示，并引导用户手动下载
-            if (ipaFiles.length === 0) {
-                ipaListEl.innerHTML = `
-                    <div style="text-align:center;color:#666;margin-top:20px;">
-                        请将 .ipa 文件上传到当前目录<br>
-                        网页会自动识别并列出下载入口
-                    </div>
-                `;
-                return;
-            }
-
-            // 自动生成所有IPA的下载按钮
-            ipaFiles.forEach(fileName => {
-                const btn = document.createElement('a');
-                btn.href = baseUrl + fileName;
-                btn.className = 'btn ipa-btn';
-                btn.textContent = `📦 下载 ${fileName}`;
-                ipaListEl.appendChild(btn);
-            });
-        }
-
-        // 调用自动识别函数
-        autoDetectIpaFiles();
+        // 自动生成所有ipa的下载按钮
+        ipaFiles.forEach(fileName => {
+            const btn = document.createElement('a');
+            btn.href = baseUrl + fileName;
+            btn.className = 'btn ipa-btn';
+            // 自动从文件名里提取软件名（去掉版本号、特殊字符）
+            let appName = fileName.replace(/\.ipa$/i, '').split('@')[0].split('_').join(' ');
+            btn.textContent = `📦 下载 ${appName}`;
+            ipaListEl.appendChild(btn);
+        });
     </script>
 </body>
 </html>
