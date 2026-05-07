@@ -468,14 +468,18 @@ function computeZoneReal(zone) {
   let matureDate = getAbsDate(zone.baseMD, zone.mtOffset, zone.mtHm);
   let M = Math.max(0, (matureDate.getTime() - nowMs) / 60000);
   
-  let initR = Math.min(W, Math.max(0, currentWaterMin));
-  let steps = calculateRealPlan(M, initR, W, fullReduce);
+  let steps = [];
+  // 修复：已经成熟直接不计算浇水斩杀计划
+  if (M > 0) {
+      let initR = Math.min(W, Math.max(0, currentWaterMin));
+      steps = calculateRealPlan(M, initR, W, fullReduce);
+  }
 
   let isDryNow = dryMs < nowMs;
   let events = [];
 
-  // 只在真的干涸时，才插入立即浇水
-  if(isDryNow && currentWaterMin <= 0){
+  // 只在真的干涸且未成熟时，才插入立即浇水
+  if(isDryNow && currentWaterMin <= 0 && M > 0){
       let nowH = now.getHours().toString().padStart(2,'0');
       let nowM = now.getMinutes().toString().padStart(2,'0');
       events.push({
@@ -514,7 +518,8 @@ function computeZoneReal(zone) {
     events: uniqueEvents, future, next, count: future.length,
     baseMD: zone.baseMD,
     cropOverride: zone.cropOverride,
-    isDryNow
+    isDryNow,
+    isMature: M <= 0
   };
 }
 
@@ -530,10 +535,11 @@ function render() {
     let d = computeZoneReal(z);
     zoneRealData[id] = d;
 
-    let nextStr = d.next ? d.next.timeStr : '已完成';
-    let doneClass = d.next ? '' : 'done';
-    let nowClass = d.isDryNow ? 'now' : '';
-    let urgent = d.next && (d.next.absMs - now.getTime()) < 30 * 60 * 1000;
+   
+    let nextStr = d.isMature ? '可收获' : (d.next ? d.next.timeStr : '已完成');
+    let doneClass = d.isMature ? 'done' : (d.next ? '' : 'done');
+    let nowClass = d.isDryNow && !d.isMature ? 'now' : '';
+    let urgent = d.next && !d.isMature && (d.next.absMs - now.getTime()) < 30 * 60 * 1000;
     let badge = urgent ? '<span style="background:red;color:white;padding:2px 6px;border-radius:12px;font-size:10px;">急</span>' : '';
     let dateBadge = d.baseMD ? `<span class="zone-date-badge">${d.baseMD}</span>` : '';
     let cropOverrideClass = d.cropOverride ? ' override' : '';
@@ -545,7 +551,7 @@ function render() {
         ${dateBadge}
         <span class="crop-hour${cropOverrideClass}">${d.crop.name.replace('小时','')}H</span>
         <span class="next-water ${doneClass} ${nowClass}">${nextStr}</span>
-        <span class="zone-badge">${d.count}次</span>
+        <span class="zone-badge">${d.isMature ? 0 : d.count}次</span>
         ${badge}
       </div>
       <div id="${id}" class="zone-detail">
@@ -556,24 +562,29 @@ function render() {
         </div>
         <div class="water-timeline">`;
 
-    d.events.forEach(e => {
-      let isCurr = d.next && e.absMs === d.next.absMs;
-      let cls = e.type === 'kill' ? 'kill' : '';
-      if (isCurr) cls += ' current';
-      let title = e.type === 'kill' ? '斩杀' : '浇水';
-      
-      html += `
-        <div class="water-card ${cls}">
-          <div class="water-left">
-            <span class="water-title">${title}</span>
-            <div class="water-big-time">${e.timeStr}</div>
-          </div>
-          <div class="water-right">
-            <span class="water-amount">💧${toHm(e.add)}</span>
-            <span class="water-reduce">➖${toHm(e.red)}</span>
-          </div>
-        </div>`;
-    });
+    // 成熟后不渲染任何浇水斩杀列表
+    if(!d.isMature){
+        d.events.forEach(e => {
+          let isCurr = d.next && e.absMs === d.next.absMs;
+          let cls = e.type === 'kill' ? 'kill' : '';
+          if (isCurr) cls += ' current';
+          let title = e.type === 'kill' ? '斩杀' : '浇水';
+          
+          html += `
+            <div class="water-card ${cls}">
+              <div class="water-left">
+                <span class="water-title">${title}</span>
+                <div class="water-big-time">${e.timeStr}</div>
+              </div>
+              <div class="water-right">
+                <span class="water-amount">💧${toHm(e.add)}</span>
+                <span class="water-reduce">➖${toHm(e.red)}</span>
+              </div>
+            </div>`;
+        });
+    } else {
+        html += `<div style="text-align:center;padding:16px;color:#477e3c;font-weight:bold;">作物已成熟，无需浇水/斩杀</div>`;
+    }
 
     html += `</div></div></div>`;
   });
@@ -604,6 +615,9 @@ function sortByNext() {
   currentZones.sort((a, b) => {
     let da = computeZoneReal(a);
     let db = computeZoneReal(b);
+    // 已成熟排最后
+    if(da.isMature && !db.isMature) return 1;
+    if(!da.isMature && db.isMature) return -1;
     let ta = da.next ? da.next.absMs : 9e15;
     let tb = db.next ? db.next.absMs : 9e15;
     return ta - tb;
