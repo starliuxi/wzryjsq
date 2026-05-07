@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>iOS 自动安装</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+    background:#f6f6f6;
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
+    text-align:center;
+    padding:60px 20px;
+}
+.box{
+    background:#fff;
+    border-radius:16px;
+    padding:40px 20px;
+    max-width:320px;
+    margin:0 auto;
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+h2{
+    color:#333;
+    margin-bottom:30px;
+}
+.install-btn{
+    display:block;
+    background:#007aff;
+    color:#fff;
+    text-decoration:none;
+    font-size:18px;
+    padding:14px 0;
+    border-radius:10px;
+    margin:20px auto;
+}
+.tip{
+    color:#888;
+    font-size:13px;
+    line-height:1.8;
+    margin-top:25px;
+}
+</style>
+</head>
+<body>
+<div class="box">
+    <h2>企业版 APP 安装</h2>
+    <!-- 核心：自动读取当前目录下的 manifest.plist -->
+    <a class="install-btn" id="installBtn">点击立即安装</a>
+    <div class="tip">
+        请用 iPhone Safari 打开<br>
+        安装后：设置 → 通用 → VPN与设备管理 → 信任企业证书
+    </div>
+</div>
+
+<script>
+// 固定读取当前目录下的 manifest.plist
+let plistUrl = location.origin + location.pathname.replace(/index\.html$/i, "") + "manifest.plist";
+// 拼接iOS安装协议
+document.getElementById("installBtn").href = "itms-services://?action=download-manifest&url=" + plistUrl;
+</script>
+</body>
+</html>
