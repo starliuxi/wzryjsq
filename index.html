@@ -597,9 +597,10 @@ function computeZoneReal(zone) {
   let M = Math.max(0, (matureMs - nowMs) / 60000);
   
   let usedWaterMin = W - currentWaterMin;
-  
+  let canOperate = usedWaterMin >= minInterval;
+
   let steps = [];
-  if (M > 0 && usedWaterMin >= minInterval) {
+  if (M > 0) {
       let initR = Math.min(W, Math.max(0, currentWaterMin));
       steps = calculateRealPlan(M, initR, W, fullReduce);
   }
@@ -680,7 +681,7 @@ function computeZoneReal(zone) {
 
   let future = finalEvents.slice();
   let next = future[0];
-  let noOper = !next && M > 0 && usedWaterMin < minInterval;
+  let noOper = !canOperate;
 
   return {
     crop, W, currentWaterMin, pct,
@@ -711,8 +712,8 @@ function render() {
     if(d.isMature){
         nextStr = "可收获";
         clsName = 'done';
-    }else if(d.noOper){
-        nextStr = d.next ? d.next.timeStr : z.mtHm;
+    }else if(d.noOper && !d.next){
+        nextStr = "间隔未到";
         clsName = 'noOper';
     }else if(d.next){
         nextStr = d.next.timeStr;
@@ -748,7 +749,25 @@ function render() {
         <div class="water-timeline">`;
 
       if(d.noOper){
-          html += `<div class="tip-text">距离上次浇水间隔不足，无法再次浇水（已过${Math.floor(d.usedWaterMin)}分钟，需${d.minInterval}分钟）</div>`;
+          html += `<div class="tip-text">距离上次浇水间隔不足，无法再次安排浇水（已过${Math.floor(d.usedWaterMin)}分钟，需${d.minInterval}分钟）</div>`;
+          d.events.forEach(e => {
+              let isCurr = d.next && e.absMs === d.next.absMs;
+              let cls = e.type === 'kill' ? 'kill' : '';
+              if (isCurr) cls += ' current';
+              let title = e.type === 'kill' ? '斩杀' : '浇水';
+              html += `
+              <div class="water-card ${cls}">
+                <div class="water-left">
+                  <span class="water-title">${title}</span>
+                  <div class="water-big-time">${e.timeStr}</div>
+                </div>
+                <div class="water-right">
+                  <span class="water-amount">💧${toHm(e.add)}</span>
+                  <span class="water-reduce">➖${toHm(e.red)}</span>
+                  <span class="water-mature">🧺${e.matureStr}</span>
+                </div>
+              </div>`;
+          });
       }else{
           d.events.forEach(e => {
             let isCurr = d.next && e.absMs === d.next.absMs;
