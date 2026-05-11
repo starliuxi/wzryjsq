@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>农场浇水计算器</title>
+    <title>农场记录</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
@@ -701,7 +701,7 @@ function render() {
     document.getElementById('resultArea').innerHTML = `<div class="stats"></div><div style="text-align:center;padding:20px;color:#888;">暂无数据</div>`;
     return;
   }
-  let html = `<div class="stats">共${zones.length}块地</div><div class="zone-list">`;
+  let html = `<div class="stats">共${zones.length}区</div><div class="zone-list">`;
   zones.forEach((z, i) => {
     let id = `z${i}`;
     let d = computeZoneReal(z);
