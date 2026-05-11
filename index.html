@@ -21,14 +21,16 @@
             margin-bottom: 20px; 
         }
         .content { padding: 20px; }
-        /* 仅做相对定位，不改变任何布局 */
-        .textarea-wrap {
+        
+        .textarea-wrapper {
             position: relative;
             margin-bottom: 16px;
         }
+        
         textarea { 
             width: 100%; 
             padding: 14px; 
+            padding-bottom: 50px;
             font-family: monospace; 
             font-size: 0.85rem; 
             border: 2px solid #e2d2a0; 
@@ -38,41 +40,45 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            /* 完全保留原有内边距，不做任何修改 */
         }
-        /* 复制图标：悬浮在文本框右上角外侧，透明背景，仅图标大小 */
-        .copy-icon-btn {
+        
+        .textarea-actions {
             position: absolute;
-            top: 6px;
-            right: 10px;
-            background: transparent;
+            bottom: 14px;
+            right: 14px;
+            display: flex;
+            gap: 1px;
+            z-index: 5;
+        }
+        
+        .action-btn {
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
             border: none;
-            color: #6b8c5e;
-            font-size: 20px;
+            border-radius: 0;
             cursor: pointer;
-            z-index: 2;
-            padding: 2px;
-            line-height: 1;
-            opacity: 0.7;
-            transition: opacity 0.2s;
+            transition: all 0.2s;
+            color: #5a4a2a;
+            background: rgba(232, 220, 200, 0.2);
+            display: flex;
+            align-items: center;
+            min-width: auto;
+            flex: none;
         }
-        .copy-icon-btn:hover,
-        .copy-icon-btn:active {
-            opacity: 1;
-            background: transparent;
-            transform: none;
+        .action-btn:active { 
+            transform: scale(0.95); 
+            background: #d9c9a8; 
         }
-        /* 复制提示小字，不影响布局 */
-        .copy-toast {
-            position: absolute;
-            top: -25px;
-            right: 0;
-            font-size: 0.7rem;
-            color: #477e3c;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
+        .action-btn.copied {
+            background: #c8e6c9;
+            color: #2e5a2e;
         }
+        .action-btn.pasted {
+            background: #c8e6c9;
+            color: #2e5a2e;
+        }
+        
         .btn-group { 
             display: flex; 
             gap: 12px; 
@@ -350,17 +356,18 @@
                 <div class="local-time-value" id="localTime">--:--:--</div>
                 <div>
                     <div class="local-date-value" id="localDate">----年--月--日</div>
-                    <div class="local-weekday" id="localWeekday">星期-</div>
+                    <div class="localWeekday" id="localWeekday">星期-</div>
                 </div>
             </div>
-
-            <div class="textarea-wrap">
+            
+            <div class="textarea-wrapper">
                 <textarea id="rawData" rows="6" wrap="soft" placeholder="粘贴数据或从链接自动加载"></textarea>
-                <!-- 纯图标、透明背景、不占输入区域 -->
-                <button class="copy-icon-btn" id="copyBtn" title="复制文本">⧉</button>
-                <div class="copy-toast" id="copyToast">已复制</div>
+                <div class="textarea-actions">
+                    <button class="action-btn" id="pasteBtn" onclick="pasteText()">粘贴</button>
+                    <button class="action-btn" id="copyBtn" onclick="copyText()">复制</button>
+                </div>
             </div>
-
+            
             <div class="btn-group">
                 <button id="calcBtn">计算</button>
                 <button id="sortBtn" class="sort-btn">浇水时间</button>
@@ -373,28 +380,77 @@
 </div>
 
 <script>
+function pasteText() {
+    const pasteBtn = document.getElementById('pasteBtn');
+    const textarea = document.getElementById('rawData');
+    
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(text => {
+            textarea.value = text;
+            pasteBtn.classList.add('pasted');
+            const originalText = pasteBtn.textContent;
+            pasteBtn.textContent = '粘贴';
+            setTimeout(() => {
+                pasteBtn.classList.remove('pasted');
+                pasteBtn.textContent = originalText;
+            }, 1500);
+        }).catch(() => {
+            textarea.focus();
+            alert('请手动粘贴 (Ctrl+V)');
+        });
+    } else {
+        textarea.focus();
+    }
+}
+
+function copyText() {
+    const textarea = document.getElementById('rawData');
+    const copyBtn = document.getElementById('copyBtn');
+    
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    
+    try {
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            copyBtn.classList.add('copied');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '复制';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.textContent = originalText;
+            }, 1500);
+        }).catch(() => {
+            document.execCommand('copy');
+            copyBtn.classList.add('copied');
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '复制';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.textContent = originalText;
+            }, 1500);
+        });
+    } catch (err) {
+        document.execCommand('copy');
+        copyBtn.classList.add('copied');
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '复制';
+        setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = originalText;
+        }, 1500);
+    }
+}
+
 const CROP_CONFIG = {
   1:  { name: '1小时',  fullWater: 20,   reduce: 5,  minInterval: 2 },
   8:  { name: '8小时',  fullWater: 160,  reduce: 40, minInterval: 16 },
   16: { name: '16小时', fullWater: 320,  reduce: 80, minInterval: 32 },
-  32: { name: '32小时', fullWater: 640,  reduce: 160,minInterval: 64 }
+  32: { name: '32小时', fullWater: 640,  reduce: 160, minInterval: 64 }
 };
 
 let currentZones = [];
 let zoneRealData = {};
 let now = new Date();
-
-// 复制功能
-document.getElementById('copyBtn').addEventListener('click', function() {
-    const textarea = document.getElementById('rawData');
-    const toast = document.getElementById('copyToast');
-    textarea.select();
-    document.execCommand('copy');
-    toast.style.opacity = '1';
-    setTimeout(() => {
-        toast.style.opacity = '0';
-    }, 1200);
-});
 
 function updateLocalTime() {
   now = new Date();
@@ -692,7 +748,7 @@ function render() {
         <div class="water-timeline">`;
 
       if(d.noOper){
-          html += `<div class="tip-text">距离上次浇水间隔不足，暂无法操作（已过${Math.floor(d.usedWaterMin)}分钟，需${d.minInterval}分钟）</div>`;
+          html += `<div class="tip-text">距离上次浇水间隔不足，无法再次浇水（已过${Math.floor(d.usedWaterMin)}分钟，需${d.minInterval}分钟）</div>`;
       }else{
           d.events.forEach(e => {
             let isCurr = d.next && e.absMs === d.next.absMs;
