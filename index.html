@@ -611,12 +611,17 @@ function computeZoneReal(zone) {
   
   let canAddWater = W - currentWaterMin;
 
+  // ========== 按你要求修改的核心逻辑 ==========
+  // 可加水量 + 剩余成熟总分钟
+  let totalSum = canAddWater + M;
   const LIMIT = 64;
-  let initR = Math.min(W, Math.max(0, currentWaterMin));
   let steps = [];
-  if (!(canAddWater < LIMIT && M < LIMIT)) {
-      steps = calculateRealPlan(M, initR, W, fullReduce);
+  // 总和大于等于64才计算浇水斩杀，小于64直接自然成熟
+  if (totalSum >= LIMIT) {
+      steps = calculateRealPlan(M, currentWaterMin, W, fullReduce);
   }
+  let isNeedNatural = totalSum < LIMIT;
+  // ==========================================
 
   let isDryNow = dryMs < nowMs;
   let events = [];
@@ -713,7 +718,9 @@ function computeZoneReal(zone) {
     remainMatureMin,
     canAddWater: canAddWater,
     remainMature: M,
-    showMatureTime: showMatureTime
+    showMatureTime: showMatureTime,
+    totalSum: totalSum,
+    isNeedNatural: isNeedNatural
   };
 }
 
@@ -744,7 +751,7 @@ function render() {
     }
 
     let urgentClass = d.urgent ? ' urgent' : '';
-    let isNeedNatural = (d.canAddWater < LIMIT && d.remainMature < LIMIT);
+    let isNeedNatural = d.isNeedNatural;
 
     html += `
     <div class="zone-item">
@@ -786,7 +793,7 @@ function render() {
       });
 
       if(isNeedNatural){
-          html += `<div class="tip-no-oper">可加水量、剩余成熟时间均小于64分钟，${d.showMatureTime}成熟</div>`;
+          html += `<div class="tip-no-oper">可加水量+剩余成熟时间总和小于64分钟，${d.showMatureTime}自然成熟无需操作</div>`;
       }
 
       html += `</div></div>`;
