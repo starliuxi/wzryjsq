@@ -168,9 +168,6 @@
             font-size: 0.65rem; 
             font-weight: bold;
         }
-        .crop-hour.override {
-            background: #e67e22;
-        }
         .next-water { 
             background: #ffd966; 
             color: #2a5c24; 
@@ -508,10 +505,11 @@ function getAbsDate(baseMD, offset, hmStr) {
     return base;
 }
 
+// 还原原版：带h、带m，不改成中文，补回分钟m
 function toHm(min) {
-  min = Math.max(0, min);
+  min = Math.max(0, Math.round(min));
   let h = Math.floor(min / 60);
-  let m = Math.floor(min % 60);
+  let m = min % 60;
   return `${h}h${m}m`;
 }
 
@@ -577,6 +575,20 @@ function adjustEvents(events, minInterval) {
     return arr;
 }
 
+// 计算今天/明天/后天 成熟文案
+function getMatureTag(fullDate) {
+  let nowDay = new Date().setHours(0,0,0,0);
+  let tarDay = new Date(fullDate).setHours(0,0,0,0);
+  let diffDay = Math.round((tarDay - nowDay) / (1000*60*60*24));
+  let hh = fullDate.getHours().toString().padStart(2,'0');
+  let mm = fullDate.getMinutes().toString().padStart(2,'0');
+  let timeStr = `${hh}:${mm}`;
+  if(diffDay === 0) return timeStr;
+  if(diffDay === 1) return "明天 " + timeStr;
+  if(diffDay === 2) return "后天 " + timeStr;
+  return timeStr;
+}
+
 function computeZoneReal(zone) {
   let nowMs = now.getTime();
   let dryDate = getAbsDate(zone.baseMD, zone.dtOffset, zone.dtHm);
@@ -598,10 +610,11 @@ function computeZoneReal(zone) {
   let M = Math.max(0, (matureMs - nowMs) / 60000);
   
   let canAddWater = W - currentWaterMin;
-  
+
+  const LIMIT = 64;
+  let initR = Math.min(W, Math.max(0, currentWaterMin));
   let steps = [];
-  if (M > 0 && canAddWater >= minInterval) {
-      let initR = Math.min(W, Math.max(0, currentWaterMin));
+  if (!(canAddWater < LIMIT && M < LIMIT)) {
       steps = calculateRealPlan(M, initR, W, fullReduce);
   }
 
@@ -661,11 +674,7 @@ function computeZoneReal(zone) {
     
     let matureAfterMs = matureMs - cumulativeRed * 60 * 1000;
     let md = new Date(matureAfterMs);
-    let mh = md.getHours().toString().padStart(2, '0');
-    let mmm = md.getMinutes().toString().padStart(2, '0');
-    let mMonth = (md.getMonth() + 1).toString();
-    let mDay = md.getDate().toString();
-    let matureStr = `${mMonth}/${mDay} ${mh}:${mmm}`;
+    let matureStr = getMatureTag(md);
     
     finalEvents.push({
         type: e.type,
@@ -682,14 +691,15 @@ function computeZoneReal(zone) {
   let future = finalEvents.slice();
   let next = future[0];
   
-  let noOper = (canAddWater < minInterval);
-  
-  // 核心修复：距离成熟30分钟内直接标记紧急闪红
   let urgent = false;
   let remainMatureMin = (matureMs - nowMs) / 60000;
   if(remainMatureMin <= 30 && remainMatureMin > 0){
       urgent = true;
   }
+
+  // 只取时分，不要月日
+  let mDate = new Date(matureMs);
+  let showMatureTime = `${mDate.getHours().toString().padStart(2,'0')}:${mDate.getMinutes().toString().padStart(2,'0')}`;
 
   return {
     crop, W, currentWaterMin, pct,
@@ -697,12 +707,13 @@ function computeZoneReal(zone) {
     baseMD: zone.baseMD, cropOverride: zone.cropOverride,
     isDryNow, isMature: M <= 0,
     matureTime: zone.mtHm,
-    matureTs: matureDate.getTime(),
-    noOper,
-    usedWaterMin: W - currentWaterMin,
+    matureTs: matureMs,
     minInterval,
     urgent,
-    remainMatureMin
+    remainMatureMin,
+    canAddWater: canAddWater,
+    remainMature: M,
+    showMatureTime: showMatureTime
   };
 }
 
@@ -713,6 +724,8 @@ function render() {
     return;
   }
   let html = `<div class="stats">共${zones.length}区</div><div class="zone-list">`;
+  const LIMIT = 64;
+  
   zones.forEach((z, i) => {
     let id = `z${i}`;
     let d = computeZoneReal(z);
@@ -722,18 +735,16 @@ function render() {
     if(d.isMature){
         nextStr = "可收获";
         clsName = 'done';
-    }else if(d.noOper){
-        nextStr = z.mtHm;
-        clsName = 'noOper';
     }else if(d.next){
         nextStr = d.next.timeStr;
         clsName = d.isDryNow ? 'now' : '';
     }else{
-        nextStr = '已完成';
+        nextStr = d.showMatureTime;
         clsName = 'done';
     }
 
     let urgentClass = d.urgent ? ' urgent' : '';
+    let isNeedNatural = (d.canAddWater < LIMIT && d.remainMature < LIMIT);
 
     html += `
     <div class="zone-item">
@@ -750,33 +761,32 @@ function render() {
         <div class="water-progress">
           <span id="wtext-${id}" class="water-time-text">${toHm(d.currentWaterMin)}</span>
           <div class="water-bar"><div id="wbar-${id}" class="water-bar-fill" style="width:${d.pct}%"></div></div>
-          <span id="wpct2-${id}" class="water-percent">${Math.round(d.pct)}%</span>
+          <span id="wpercent-${id}" class="water-percent">${Math.round(d.pct)}%</span>
         </div>
         <div class="water-timeline">`;
 
-      if(!d.noOper){
-          d.events.forEach(e => {
-            let isCurr = d.next && e.absMs === d.next.absMs;
-            let cls = e.type === 'kill' ? 'kill' : '';
-            if (isCurr) cls += ' current';
-            let title = e.type === 'kill' ? '斩杀' : '浇水';
-            
-            html += `
-              <div class="water-card ${cls}">
-                <div class="water-left">
-                  <span class="water-title">${title}</span>
-                  <div class="water-big-time">${e.timeStr}</div>
-                </div>
-                <div class="water-right">
-                  <span class="water-amount">💧${toHm(e.add)}</span>
-                  <span class="water-reduce">➖${toHm(e.red)}</span>
-                  <span class="water-mature">🧺${e.matureStr}</span>
-                </div>
-              </div>`;
-          });
-      }else{
-          // 给出原因提示
-          html += `<div class="tip-no-oper">距成熟过近，未达到${d.minInterval}分钟最小操作间隔，无需浇水/斩杀</div>`;
+      d.events.forEach(e => {
+        let isCurr = d.next && e.absMs === d.next.absMs;
+        let cls = e.type === 'kill' ? 'kill' : '';
+        if (isCurr) cls += ' current';
+        let title = e.type === 'kill' ? '斩杀' : '浇水';
+        
+        html += `
+          <div class="water-card ${cls}">
+            <div class="water-left">
+              <span class="water-title">${title}</span>
+              <div class="water-big-time">${e.timeStr}</div>
+            </div>
+            <div class="water-right">
+              <span class="water-amount">+${toHm(e.add)}</span>
+              <span class="water-reduce">-${toHm(e.red)}</span>
+              <span class="water-mature"> ${e.matureStr}</span>
+            </div>
+          </div>`;
+      });
+
+      if(isNeedNatural){
+          html += `<div class="tip-no-oper">可加水量、剩余成熟时间均小于64分钟，${d.showMatureTime}成熟</div>`;
       }
 
       html += `</div></div>`;
@@ -796,7 +806,7 @@ function refreshWaterValues() {
       zoneRealData[id] = d;
       if (!d.isMature) {
         let wt = document.getElementById(`wtext-${id}`);
-        let wp = document.getElementById(`wpct2-${id}`);
+        let wp = document.getElementById(`wpercent-${id}`);
         let wb = document.getElementById(`wbar-${id}`);
         if(wt) wt.textContent = toHm(d.currentWaterMin);
         if(wp) wp.textContent = Math.round(d.pct) + '%';
