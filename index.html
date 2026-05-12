@@ -189,7 +189,7 @@
             font-weight: bold;
         }
         .next-water.noOper {
-            background: #b7e1a1;
+            background: #ffd966;
             color: #2a5c24;
             font-weight: bold;
         }
@@ -230,6 +230,14 @@
             background: #fffcf0; 
         }
         .zone-detail.open { display: block; }
+
+        .tip-no-oper{
+            color:#995500;
+            font-size:0.75rem;
+            text-align:center;
+            padding:10px 0;
+            font-weight:bold;
+        }
         
         .water-progress {
             display: flex;
@@ -589,11 +597,10 @@ function computeZoneReal(zone) {
   let matureMs = matureDate.getTime();
   let M = Math.max(0, (matureMs - nowMs) / 60000);
   
-  let usedWaterMin = W - currentWaterMin;
+  let canAddWater = W - currentWaterMin;
   
-  // 始终计算计划
   let steps = [];
-  if (M > 0) {
+  if (M > 0 && canAddWater >= minInterval) {
       let initR = Math.min(W, Math.max(0, currentWaterMin));
       steps = calculateRealPlan(M, initR, W, fullReduce);
   }
@@ -675,15 +682,13 @@ function computeZoneReal(zone) {
   let future = finalEvents.slice();
   let next = future[0];
   
-  // noOper判断：第一个操作是浇水且间隔不足
-  let noOper = false;
-  if (future.length > 0 && future[0].type === 'water') {
-      if (usedWaterMin < minInterval) {
-          noOper = true;
-      }
-  }
-  if (future.length === 0 && M > 0 && usedWaterMin < minInterval) {
-      noOper = true;
+  let noOper = (canAddWater < minInterval);
+  
+  // 核心修复：距离成熟30分钟内直接标记紧急闪红
+  let urgent = false;
+  let remainMatureMin = (matureMs - nowMs) / 60000;
+  if(remainMatureMin <= 30 && remainMatureMin > 0){
+      urgent = true;
   }
 
   return {
@@ -694,8 +699,10 @@ function computeZoneReal(zone) {
     matureTime: zone.mtHm,
     matureTs: matureDate.getTime(),
     noOper,
-    usedWaterMin,
-    minInterval
+    usedWaterMin: W - currentWaterMin,
+    minInterval,
+    urgent,
+    remainMatureMin
   };
 }
 
@@ -716,7 +723,7 @@ function render() {
         nextStr = "可收获";
         clsName = 'done';
     }else if(d.noOper){
-        nextStr = d.next ? d.next.timeStr : z.mtHm;
+        nextStr = z.mtHm;
         clsName = 'noOper';
     }else if(d.next){
         nextStr = d.next.timeStr;
@@ -726,17 +733,13 @@ function render() {
         clsName = 'done';
     }
 
-    let urgent = d.next && !d.isMature && (d.next.absMs - now.getTime()) < 30 * 60 * 1000;
-    let dateBadge = z.baseMD ? `<span class="zone-date-badge">${z.baseMD}</span>` : '';
-    let cropOverrideClass = d.cropOverride ? ' override' : '';
-    let urgentClass = urgent ? ' urgent' : '';
+    let urgentClass = d.urgent ? ' urgent' : '';
 
     html += `
     <div class="zone-item">
       <div class="zone-header${d.isMature ? ' no-expand' : ''}"${d.isMature ? '' : ` onclick="toggle('${id}')"`}>
         <span class="zone-name">${z.name}</span>
-        ${dateBadge}
-        <span class="crop-hour${cropOverrideClass}">${d.crop.name.replace('小时','')}H</span>
+        <span class="crop-hour">${d.crop.name.replace('小时','')}H</span>
         <span class="next-water ${clsName}${urgentClass}">${nextStr}</span>
         <span class="zone-badge">${d.isMature ? 0 : d.count}次</span>
       </div>`;
@@ -751,9 +754,7 @@ function render() {
         </div>
         <div class="water-timeline">`;
 
-      if(d.noOper){
-          html += `<div class="tip-text">距离上次浇水间隔不足，无法再次浇水（已过${Math.floor(d.usedWaterMin)}分钟，需${d.minInterval}分钟）</div>`;
-      }else{
+      if(!d.noOper){
           d.events.forEach(e => {
             let isCurr = d.next && e.absMs === d.next.absMs;
             let cls = e.type === 'kill' ? 'kill' : '';
@@ -773,6 +774,9 @@ function render() {
                 </div>
               </div>`;
           });
+      }else{
+          // 给出原因提示
+          html += `<div class="tip-no-oper">距成熟过近，未达到${d.minInterval}分钟最小操作间隔，无需浇水/斩杀</div>`;
       }
 
       html += `</div></div>`;
