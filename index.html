@@ -611,17 +611,15 @@ function computeZoneReal(zone) {
   
   let canAddWater = W - currentWaterMin;
 
-  // ========== 按你要求修改的核心逻辑 ==========
-  // 可加水量 + 剩余成熟总分钟
+  // ========== 修正：阈值 = 该作物的 minInterval，不再固定64 ==========
   let totalSum = canAddWater + M;
-  const LIMIT = 64;
+  let LIMIT = minInterval;
   let steps = [];
-  // 总和大于等于64才计算浇水斩杀，小于64直接自然成熟
   if (totalSum >= LIMIT) {
       steps = calculateRealPlan(M, currentWaterMin, W, fullReduce);
   }
   let isNeedNatural = totalSum < LIMIT;
-  // ==========================================
+  // ==============================================================
 
   let isDryNow = dryMs < nowMs;
   let events = [];
@@ -731,7 +729,6 @@ function render() {
     return;
   }
   let html = `<div class="stats">共${zones.length}区</div><div class="zone-list">`;
-  const LIMIT = 64;
   
   zones.forEach((z, i) => {
     let id = `z${i}`;
@@ -793,7 +790,7 @@ function render() {
       });
 
       if(isNeedNatural){
-          html += `<div class="tip-no-oper">可加水量+剩余成熟时间总和小于64分钟，${d.showMatureTime}自然成熟无需操作</div>`;
+          html += `<div class="tip-no-oper">可加水量+剩余成熟时间总和小于${d.minInterval}分钟，${d.showMatureTime}自然成熟无需操作</div>`;
       }
 
       html += `</div></div>`;
