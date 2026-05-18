@@ -169,10 +169,17 @@
             font-family: monospace;
             letter-spacing: 2px;
         }
+        /* 修改这里：日期+星期靠右，星期在右下角 */
+        .time-right {
+            text-align: right;
+        }
         .local-date-value {
             font-size: 0.85rem;
             opacity: 0.8;
-            text-align: right;
+        }
+        .localWeekday {
+            font-size: 0.85rem;
+            opacity: 0.8;
         }
         
         .stats { 
@@ -454,9 +461,10 @@
         </div>
         <div class="card">
             <div class="content">
+                <!-- 这里改成你喜欢的布局：大时间左，日期+星期右，星期在右下角 -->
                 <div class="local-time-panel" onclick="location.href='http://ikuun.de5.net/1.html'">
                     <div class="local-time-value" id="localTime">--:--:--</div>
-                    <div>
+                    <div class="time-right">
                         <div class="local-date-value" id="localDate">----年--月--日</div>
                         <div class="localWeekday" id="localWeekday">星期-</div>
                     </div>
