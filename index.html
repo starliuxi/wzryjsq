@@ -799,11 +799,17 @@ function computeZoneReal(zone) {
   let future = finalEvents.slice();
   let next = future[0];
   
-  let urgent = false;
-  let remainMatureMin = (matureMs - nowMs) / 60000;
-  if(remainMatureMin <= 30 && remainMatureMin > 0){
-      urgent = true;
-  }
+let urgent = false;
+let remainMatureMin = (matureMs - nowMs) / 60000;
+// 新增：判断下一次操作（浇水/斩杀）剩余时间
+let remainNextMin = Infinity;
+if(d.next){
+    remainNextMin = (d.next.absMs - nowMs) / 60000;
+}
+// 成熟≤30分钟 或者 下一次操作≤30分钟 就闪烁
+if((remainMatureMin <= 30 && remainMatureMin > 0) || (remainNextMin <= 30 && remainNextMin > 0)){
+    urgent = true;
+}
 
   // 只取时分，不要月日
   let mDate = new Date(matureMs);
