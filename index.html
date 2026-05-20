@@ -206,40 +206,40 @@
         .zone-header.no-expand { cursor: default; }
         .zone-name { color: #2a5c24; margin-right: 2px; }
 
-        /* 等级标签：彻底贴右上角，0边距 */
-        ..level-tag {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background: #3B2415;
-    color: #FFD700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.6rem;
-    font-weight: bold;
-    border: 0px;
-    margin: 0px;
-    z-index: 2;
-    overflow: hidden;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-}
-    .level-tag::before {
-    content: "";
-    position: absolute;
-    top: -100%;
-    left: -100%;
-    width: 150%;
-    height: 150%;
-    background: linear-gradient(135deg, 
-        rgba(255,255,255,0) 0%, 
-        rgba(255,255,255,0.45) 40%,
-        rgba(255,255,240,0.75) 50%,
-        rgba(255,255,255,0.45) 60%,
-        rgba(255,255,255,0) 100%);
-    animation: shimmerDiagonal 5.5s cubic-bezier(0.4,0,0.2,1) infinite;
-    pointer-events: none;
-    transform: rotate(25deg);
-     }
+        /* ====== 等级标签：深棕原木 + 王者金 + 流光 ====== */
+        .level-tag {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #3B2415;
+            color: #FFD700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            border: 0px;
+            margin: 0px;
+            z-index: 2;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .level-tag::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 150%;
+            height: 150%;
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.45) 40%,
+                rgba(255,255,240,0.75) 50%,
+                rgba(255,255,255,0.45) 60%,
+                rgba(255,255,255,0) 100%);
+            animation: shimmerDiagonal 5.5s cubic-bezier(0.4,0,0.2,1) infinite;
+            pointer-events: none;
+            transform: rotate(25deg);
+        }
 
         /* ====== 作物小时标签：边框 + 对角流光（左上→右下） ====== */
         .crop-hour { 
