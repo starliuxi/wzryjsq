@@ -7,7 +7,6 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            /* 像素风天空背景 */
             background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 100%); 
             min-height: 100vh; 
             font-family: 'Courier New', monospace, system-ui, -apple-system, 'Segoe UI', sans-serif; 
@@ -16,7 +15,6 @@
             position: relative;
             overflow-x: hidden;
         }
-        /* 像素云朵装饰 */
         body::before, body::after, .cloud-1, .cloud-2 {
             content: "";
             position: absolute;
@@ -169,18 +167,9 @@
             font-family: monospace;
             letter-spacing: 2px;
         }
-        /* 修改这里：日期+星期靠右，星期在右下角 */
-        .time-right {
-            text-align: right;
-        }
-        .local-date-value {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
-        .localWeekday {
-            font-size: 0.85rem;
-            opacity: 0.8;
-        }
+        .time-right { text-align: right; }
+        .local-date-value { font-size: 0.85rem; opacity: 0.8; }
+        .localWeekday { font-size: 0.85rem; opacity: 0.8; }
 
         .stats { 
             background: transparent; 
@@ -211,22 +200,67 @@
             gap: 6px; 
             border-bottom: 1px solid #d4c8a8;
         }
-        .zone-header.no-expand {
-            cursor: default;
-        }
-        .zone-name { 
-            color: #2a5c24; 
-            margin-right: 2px;
-        }
+        .zone-header.no-expand { cursor: default; }
+        .zone-name { color: #2a5c24; margin-right: 2px; }
+
+        /* ====== 作物小时标签：边框 + 对角流光（左上→右下） ====== */
         .crop-hour { 
-            background: #27ae60; 
-            color: white; 
+            position: relative;
+            overflow: hidden;
             padding: 4px 8px; 
             border-radius: 4px; 
             font-size: 0.65rem; 
             font-weight: bold;
-            border: 1px solid #1e8449;
+            border: 1px solid rgba(0,0,0,0.15); /* 保留小边框 */
+            color: #000; /* 黑色文字更清晰 */
         }
+        /* 【关键】斜向流光：左上 → 右下 对角线划过 */
+        .crop-hour::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 150%;
+            height: 150%;
+            background: linear-gradient(135deg, 
+                rgba(255,255,255,0) 0%, 
+                rgba(255,255,255,0.45) 40%,
+                rgba(255,255,240,0.75) 50%,
+                rgba(255,255,255,0.45) 60%,
+                rgba(255,255,255,0) 100%);
+            animation: shimmerDiagonal 5.5s cubic-bezier(0.4,0,0.2,1) infinite;
+            pointer-events: none;
+            transform: rotate(25deg);
+        }
+        @keyframes shimmerDiagonal {
+            0% { top: -120%; left: -120%; opacity:0.6; }
+            30% { opacity:1; }
+            70% { opacity:1; }
+            100% { top: 120%; left: 120%; opacity:0; }
+        }
+
+        /* 1h 米白 #fbf6e2 */
+        .crop-hour.h1 {
+            background: #fbf6e2;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        /* 8h 浅天蓝 #81d2e5 */
+        .crop-hour.h8 {
+            background: #81d2e5;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        /* 16h 金色 #Faf865 加粗 */
+        .crop-hour.h16 {
+            background: #Faf865;
+            font-weight: 900;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+        /* 32h 淡紫 #c996e1 */
+        .crop-hour.h32 {
+            background: #c996e1;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
+
         .next-water { 
             background: #ffd966; 
             color: #2a5c24; 
@@ -417,7 +451,6 @@
             color:#27ae60;
             font-weight:bold;
         }
-        /* 底部像素地面 */
         .pixel-ground {
             position: fixed;
             bottom: 0;
@@ -460,7 +493,6 @@
         </div>
         <div class="card">
             <div class="content">
-                <!-- 这里改成你喜欢的布局：大时间左，日期+星期右，星期在右下角 -->
                 <div class="local-time-panel" onclick="location.href='https://ikuun.de5.net/批量计算.html'">
                     <div class="local-time-value" id="localTime">--:--:--</div>
                     <div class="time-right">
@@ -491,7 +523,6 @@
 function pasteText() {
     const pasteBtn = document.getElementById('pasteBtn');
     const textarea = document.getElementById('rawData');
-
     if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(text => {
             textarea.value = text;
@@ -501,17 +532,12 @@ function pasteText() {
                 pasteBtn.classList.remove('pasted');
                 pasteBtn.textContent = '粘贴';
             }, 1500);
-        }).catch(() => {
-            textarea.focus();
-        });
-    } else {
-        textarea.focus();
-    }
+        }).catch(() => textarea.focus());
+    } else textarea.focus();
 }
 function copyText() {
     const textarea = document.getElementById('rawData');
     const copyBtn = document.getElementById('copyBtn');
-
     textarea.select();
     try {
         navigator.clipboard.writeText(textarea.value).then(() => {
@@ -600,7 +626,6 @@ function getAbsDate(baseMD, offset, hmStr) {
     base.setDate(base.getDate() + offset);
     return base;
 }
-// 还原原版：带h、带m，不改成中文，补回分钟m
 function toHm(min) {
   min = Math.max(0, Math.round(min));
   let h = Math.floor(min / 60);
@@ -664,7 +689,6 @@ function adjustEvents(events, minInterval) {
   }
   return arr;
 }
-// 计算今天/明天/后天 成熟文案
 function getMatureTag(fullDate) {
   let nowDay = new Date().setHours(0,0,0,0);
   let tarDay = new Date(fullDate).setHours(0,0,0,0);
@@ -696,7 +720,6 @@ function computeZoneReal(zone) {
   let M = Math.max(0, (matureMs - nowMs) / 60000);
 
   let canAddWater = W - currentWaterMin;
-  // ========== 修正：阈值 = 该作物的 minInterval，不再固定64 ==========
   let totalSum = canAddWater + M;
   let LIMIT = minInterval;
   let steps = [];
@@ -704,15 +727,12 @@ function computeZoneReal(zone) {
       steps = calculateRealPlan(M, currentWaterMin, W, fullReduce);
   }
   let isNeedNatural = totalSum < LIMIT;
-  // ==============================================================
   let isDryNow = dryMs < nowMs;
   let events = [];
   if(isDryNow && currentWaterMin <= 0 && M > 0){
       events.push({ type: 'water', t: 0, add: W, red: fullReduce });
   }
-  steps.forEach(e => {
-    events.push({ ...e });
-  });
+  steps.forEach(e => events.push({ ...e }));
   let seen = new Set();
   let uniqueEvents = [];
   for (let e of events) {
@@ -731,7 +751,6 @@ function computeZoneReal(zone) {
     let e = adjusted[i];
     let dt = e.t - prevT;
     let add, red;
-
     if (e.type === 'water') {
       let cr = Math.max(0, currentR - dt);
       add = W - cr;
@@ -748,46 +767,30 @@ function computeZoneReal(zone) {
       cumulativeRed += red;
       currentR = Math.max(0, cr - K + add - (e.t + K - e.t));
     }
-
     let absMs = nowMs + e.t * 60 * 1000;
     let d = new Date(absMs);
     let hh = d.getHours().toString().padStart(2, '0');
     let mm = d.getMinutes().toString().padStart(2, '0');
-
     let matureAfterMs = matureMs - cumulativeRed * 60 * 1000;
     let md = new Date(matureAfterMs);
     let matureStr = getMatureTag(md);
-
     finalEvents.push({
-        type: e.type,
-        t: e.t,
-        add, red,
-        timeStr: `${hh}:${mm}`,
-        absMs: absMs,
-        matureStr: matureStr
+        type: e.type, t: e.t, add, red,
+        timeStr: `${hh}:${mm}`, absMs: absMs, matureStr: matureStr
     });
-
     prevT = e.t;
   }
   let future = finalEvents.slice();
   let next = future[0];
 
-  // ========== 【已修复】浇水 / 斩杀 / 成熟 任意一个30分钟内就闪烁 ==========
   let urgent = false;
   let remainMatureMin = (matureMs - nowMs) / 60000;
   let remainNextMin = Infinity;
-  if (next) {
-      remainNextMin = (next.absMs - nowMs) / 60000;
-  }
-  if (
-      (remainMatureMin <= 30 && remainMatureMin > 0) ||
-      (remainNextMin <= 30 && remainNextMin > 0)
-  ) {
+  if (next) remainNextMin = (next.absMs - nowMs) / 60000;
+  if ((remainMatureMin <= 30 && remainMatureMin > 0) || (remainNextMin <= 30 && remainNextMin > 0)) {
       urgent = true;
   }
-  // ======================================================================
 
-  // 只取时分，不要月日
   let mDate = new Date(matureMs);
   let showMatureTime = `${mDate.getHours().toString().padStart(2,'0')}:${mDate.getMinutes().toString().padStart(2,'0')}`;
   return {
@@ -795,29 +798,19 @@ function computeZoneReal(zone) {
     events: finalEvents, future, next, count: future.length,
     baseMD: zone.baseMD, cropOverride: zone.cropOverride,
     isDryNow, isMature: M <= 0,
-    matureTime: zone.mtHm,
-    matureTs: matureMs,
-    minInterval,
-    urgent,
-    remainMatureMin,
-    canAddWater: canAddWater,
-    remainMature: M,
-    showMatureTime: showMatureTime,
-    totalSum: totalSum,
-    isNeedNatural: isNeedNatural
+    matureTime: zone.mtHm, matureTs: matureMs, minInterval,
+    urgent, remainMatureMin, canAddWater, remainMature: M,
+    showMatureTime, totalSum, isNeedNatural
   };
 }
 function render() {
   let zones = currentZones;
-  // 顶部星星数字同步为识别到的大区数量
   document.getElementById('zoneTotalNum').innerText = zones.length;
   if (!zones.length) {
     document.getElementById('resultArea').innerHTML = `<div class="stats"></div><div style="text-align:center;padding:20px;color:#888;">暂无数据</div>`;
     return;
   }
-  // 彻底删除 共XX区 文字
   let html = `<div class="stats"></div><div class="zone-list">`;
-
   zones.forEach((z, i) => {
     let id = `z${i}`;
     let d = computeZoneReal(z);
@@ -834,14 +827,24 @@ function render() {
         clsName = 'done';
     }
     let urgentClass = d.urgent ? ' urgent' : '';
-    let isNeedNatural = d.isNeedNatural;
+    let badgeHtml = '';
+    if (!d.isMature && d.count >= 2) {
+        badgeHtml = `<span class="zone-badge">${d.count}次</span>`;
+    }
+    // 作物小时对应颜色类
+    let hourClass = '';
+    if(d.crop.name === '1小时') hourClass = 'h1';
+    if(d.crop.name === '8小时') hourClass = 'h8';
+    if(d.crop.name === '16小时') hourClass = 'h16';
+    if(d.crop.name === '32小时') hourClass = 'h32';
+
     html += `
     <div class="zone-item">
       <div class="zone-header${d.isMature ? ' no-expand' : ''}"${d.isMature ? '' : ` onclick="toggle('${id}')"`}>
         <span class="zone-name">${z.name}</span>
-        <span class="crop-hour">${d.crop.name.replace('小时','')}H</span>
+        <span class="crop-hour ${hourClass}">${d.crop.name.replace('小时','')}H</span>
         <span class="next-water ${clsName}${urgentClass}">${nextStr}</span>
-        <span class="zone-badge">${d.isMature ? 0 : d.count}次</span>
+        ${badgeHtml}
       </div>`;
     if (!d.isMature) {
       html += `
@@ -857,7 +860,6 @@ function render() {
         let cls = e.type === 'kill' ? 'kill' : '';
         if (isCurr) cls += ' current';
         let title = e.type === 'kill' ? '斩杀' : '浇水';
-
         html += `
           <div class="water-card ${cls}">
             <div class="water-left">
@@ -871,7 +873,7 @@ function render() {
             </div>
           </div>`;
       });
-      if(isNeedNatural){
+      if(d.isNeedNatural){
           html += `<div class="tip-no-oper">可加水量+剩余成熟时间总和小于${d.minInterval}分钟，${d.showMatureTime}自然成熟无需操作</div>`;
       }
       html += `</div></div>`;
