@@ -189,6 +189,7 @@
             border: 2px solid #d4c8a8;
         }
         .zone-header { 
+            position: relative;
             display: flex; 
             align-items: center; 
             padding: 10px 16px; 
@@ -199,9 +200,26 @@
             flex-wrap: wrap; 
             gap: 6px; 
             border-bottom: 1px solid #d4c8a8;
+            /* 关键：让内部内容不被右上角标签遮挡 */
+            padding-right: 70px;
         }
         .zone-header.no-expand { cursor: default; }
         .zone-name { color: #2a5c24; margin-right: 2px; }
+
+        /* 等级标签：彻底贴右上角，0边距 */
+        .level-tag {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #e7d2b0;
+            color: #6b4c24;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            border: 1px solid #d4b888;
+            z-index: 2;
+        }
 
         /* ====== 作物小时标签：边框 + 对角流光（左上→右下） ====== */
         .crop-hour { 
@@ -211,10 +229,9 @@
             border-radius: 4px; 
             font-size: 0.65rem; 
             font-weight: bold;
-            border: 1px solid rgba(0,0,0,0.15); /* 保留小边框 */
-            color: #000; /* 黑色文字更清晰 */
+            border: 1px solid rgba(0,0,0,0.15);
+            color: #000;
         }
-        /* 【关键】斜向流光：左上 → 右下 对角线划过 */
         .crop-hour::before {
             content: "";
             position: absolute;
@@ -239,27 +256,10 @@
             100% { top: 120%; left: 120%; opacity:0; }
         }
 
-        /* 1h 米白 #fbf6e2 */
-        .crop-hour.h1 {
-            background: #fbf6e2;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        /* 8h 浅天蓝 #81d2e5 */
-        .crop-hour.h8 {
-            background: #81d2e5;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        /* 16h 金色 #Faf865 加粗 */
-        .crop-hour.h16 {
-            background: #Faf865;
-            font-weight: 900;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        /* 32h 淡紫 #c996e1 */
-        .crop-hour.h32 {
-            background: #c996e1;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
+        .crop-hour.h1 { background: #fbf6e2; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .crop-hour.h8 { background: #81d2e5; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .crop-hour.h16 { background: #Faf865; font-weight: 900; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .crop-hour.h32 { background: #c996e1; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
 
         .next-water { 
             background: #ffd966; 
@@ -274,33 +274,17 @@
             cursor: pointer;
             border: 1px solid #d4a017;
         }
-        .next-water.done {
-            background: #2ecc71;
-            color: #000;
-            font-weight: bold;
-            border-color: #27ae60;
-        }
-        .next-water.noOper {
-            background: #ffd966;
-            color: #2a5c24;
-            font-weight: bold;
-        }
-        .next-water.now {
-            background: #ff6b6b;
-            color: #fff;
-            border-color: #c0392b;
-        }
+        .next-water.done { background: #2ecc71; color: #000; font-weight: bold; border-color: #27ae60; }
+        .next-water.noOper { background: #ffd966; color: #2a5c24; font-weight: bold; }
+        .next-water.now { background: #ff6b6b; color: #fff; border-color: #c0392b; }
         .next-water.urgent {
             background: #ff4444 !important;
             color: #ffffff !important;
             animation: flash 1s infinite alternate;
             border-color: #c0392b !important;
         }
-        @keyframes flash {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
+        @keyframes flash { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
         .zone-badge { 
             background: #87ceeb; 
             color: #2a5c24; 
@@ -309,15 +293,6 @@
             font-size: 0.65rem; 
             font-weight: bold;
             border: 1px solid #5dade2;
-        }
-        .zone-date-badge {
-            background: #e7d2b0;
-            color: #6b4c24;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.6rem;
-            font-weight: bold;
-            border: 1px solid #d4b888;
         }
         .zone-detail { 
             padding: 0 16px 12px; 
@@ -368,13 +343,7 @@
             text-align: right;
         }
 
-        .water-timeline {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 8px;
-        }
-
+        .water-timeline { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
         .water-card {
             background: white;
             border-radius: 8px;
@@ -385,56 +354,15 @@
             justify-content: space-between;
             border: 1px solid #d4c8a8;
         }
-        .water-card.kill {
-            border-left-color: #e74c3c;
-            background: #fff3cd;
-        }
-        .water-card.current {
-            border-left-color: #e74c3c;
-            background: #ffe9e9;
-            box-shadow: 0 2px 8px rgba(231,76,60,0.3);
-        }
-
-        .water-left {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-        .water-right {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: flex-end;
-        }
-
-        .water-title {
-            font-weight: 700;
-            color: #2a5c24;
-            font-size: 0.9rem;
-        }
-        .water-big-time {
-            font-family: monospace;
-            font-weight: 700;
-            font-size: 1.8rem;
-            color: #1b4a16;
-            line-height: 1.2;
-        }
-
-        .water-amount {
-            color: #27ae60;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-        .water-reduce {
-            color: #d4a017;
-            font-weight: 500;
-            font-size: 0.85rem;
-        }
-        .water-mature {
-            color: #e67e22;
-            font-weight: 700;
-            font-size: 0.85rem;
-        }
+        .water-card.kill { border-left-color: #e74c3c; background: #fff3cd; }
+        .water-card.current { border-left-color: #e74c3c; background: #ffe9e9; box-shadow: 0 2px 8px rgba(231,76,60,0.3); }
+        .water-left { display: flex; flex-direction: column; gap: 4px; }
+        .water-right { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+        .water-title { font-weight: 700; color: #2a5c24; font-size: 0.9rem; }
+        .water-big-time { font-family: monospace; font-weight: 700; font-size: 1.8rem; color: #1b4a16; line-height: 1.2; }
+        .water-amount { color: #27ae60; font-weight: 500; font-size: 0.85rem; }
+        .water-reduce { color: #d4a017; font-weight: 500; font-size: 0.85rem; }
+        .water-mature { color: #e67e22; font-weight: 700; font-size: 0.85rem; }
 
         .footnote { 
             font-size: 0.65rem; 
@@ -445,12 +373,7 @@
             border-top: 1px solid #e7dcbe; 
             display: none;
         }
-        .tip-text {
-            text-align:center;
-            padding:16px;
-            color:#27ae60;
-            font-weight:bold;
-        }
+        .tip-text { text-align:center; padding:16px; color:#27ae60; font-weight:bold; }
         .pixel-ground {
             position: fixed;
             bottom: 0;
@@ -589,19 +512,30 @@ function updateLocalTime() {
   document.getElementById('localWeekday').textContent = `星期${wd}`;
 }
 function parseLineWithDate(line) {
-    let m = line.match(/^(.+?区)：(.+?)┆(.+?)\s*\((.+?)\)\s*(\d+\/\d+)?\s*(\d+)?$/);
-    if (!m) return null;
-    let name = m[1];
-    let mtRaw = m[2].trim();
-    let dtRaw = m[3].trim();
-    let rem = m[4];
-    let baseMD = m[5] || "";
-    let cropOverride = m[6] ? parseInt(m[6]) : null;
-    if (cropOverride && ![1,8,16,32].includes(cropOverride)) cropOverride = null;
+    const mainReg = /^(.+?区)：(.+?)┆(.+?)\s*\((.+?)\)\s*(\d+\/\d+)?/;
+    const mainMatch = line.match(mainReg);
+    if (!mainMatch) return null;
+
+    let name = mainMatch[1];
+    let mtRaw = mainMatch[2].trim();
+    let dtRaw = mainMatch[3].trim();
+    let rem = mainMatch[4];
+    let baseMD = mainMatch[5] || "";
+
+    const suffix = line.slice(mainMatch[0].length).trim();
+    let level = null;
+    let cropOverride = null;
+
+    const parts = suffix.split(/\s+/);
+    for (const p of parts) {
+        if (/^lv:\d+$/.test(p)) level = parseInt(p.replace('lv:', ''));
+        else if (/^(1|8|16|32)$/.test(p)) cropOverride = parseInt(p);
+    }
+
     let mt = parseTimeWithPrefix(mtRaw);
     let dt = parseTimeWithPrefix(dtRaw);
     return {
-        name, rem, baseMD, cropOverride,
+        name, rem, baseMD, cropOverride, level,
         mtHm: mt.hm, mtOffset: mt.offset,
         dtHm: dt.hm, dtOffset: dt.offset
     };
@@ -831,12 +765,13 @@ function render() {
     if (!d.isMature && d.count >= 2) {
         badgeHtml = `<span class="zone-badge">${d.count}次</span>`;
     }
-    // 作物小时对应颜色类
     let hourClass = '';
     if(d.crop.name === '1小时') hourClass = 'h1';
     if(d.crop.name === '8小时') hourClass = 'h8';
     if(d.crop.name === '16小时') hourClass = 'h16';
     if(d.crop.name === '32小时') hourClass = 'h32';
+
+    let levelHtml = z.level ? `<span class="level-tag">Lv:${z.level}</span>` : '';
 
     html += `
     <div class="zone-item">
@@ -845,6 +780,7 @@ function render() {
         <span class="crop-hour ${hourClass}">${d.crop.name.replace('小时','')}H</span>
         <span class="next-water ${clsName}${urgentClass}">${nextStr}</span>
         ${badgeHtml}
+        ${levelHtml}
       </div>`;
     if (!d.isMature) {
       html += `
