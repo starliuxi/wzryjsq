@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>工时批量计算器</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui}
+.wrap{width:95%;max-width:1100px;margin:20px auto}
+textarea{width:100%;height:180px;padding:8px;font-size:14px}
+button{margin:10px 0;padding:8px 16px;font-size:15px;cursor:pointer}
+table {border-collapse: collapse; width:100%;margin:15px 0;}
+th,td {border:1px solid #999;padding:8px;text-align:center;white-space:nowrap;}
+th{background:#f0f0f0;}
+.holiday{background:#fff4d6;color:#b56500;font-weight:600;}
+.rest{background:#f9f9f9;color:#888;}
+.sum{line-height:1.8;font-size:16px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h3>输入：上班日期，一行一条，如 1 7-16:30；自动识别最小/最大日期，中间缺失日期显示休假</h3>
+<textarea id="inputData">
+1 7-16:30
+2 7-16:30
+3 7-16
+4 6-19
+5 7-22
+6 7-19
+7 7-18
+8 7-18
+9 7-21:30
+10 7-19
+11 7-19
+12 6-19
+13 7-19
+14 7-22
+15 7-22:30
+16 7-21:30
+17 7-19
+18 7-18:30
+19 7-22
+20 7-22
+</textarea>
+<br>
+<button onclick="calc()">开始批量计算</button>
+
+<table id="resultTable">
+  <tr>
+    <th>日</th>
+    <th>上下班</th>
+    <th>原始时长</th>
+    <th>扣减</th>
+    <th>在岗时长</th>
+    <th>加班时长</th>
+    <th>加班费</th>
+  </tr>
+</table>
+<div class="sum" id="sumBox"></div>
+</div>
+
+<script>
+// ===== 配置（固定规则，需要改这里）=====
+const holidaySet = new Set(["1","2","3"]);
+const priceHoliday = 66;
+const priceNormalOt = 22;
+const baseSalary = 4000;
+
+function time2h(str){
+  str = str.trim();
+  if(str.includes(":")){
+    let [h,m] = str.split(":").map(Number);
+    return h + m/60;
+  }else{
+    return Number(str);
+  }
+}
+
+function calc(){
+  const text = document.getElementById("inputData").value.trim();
+  const lines = text.split("\n").filter(x=>x.trim());
+  const table = document.getElementById("resultTable");
+
+  while(table.rows.length>1) table.deleteRow(1);
+
+  let normalOtHour = 0;
+  let normalOtMoney = 0;
+  let holidayOtHour = 0;
+  let holidayOtMoney = 0;
+
+  const workMap = new Map();
+  const dayList = [];
+
+  for(let line of lines){
+    let [day,timeRange] = line.trim().split(/\s+/);
+    workMap.set(day, timeRange);
+    dayList.push(parseInt(day));
+  }
+
+  if(dayList.length === 0) return;
+
+  const minDay = Math.min(...dayList);
+  const maxDay = Math.max(...dayList);
+
+  for(let d = minDay; d <= maxDay; d++){
+    const dayStr = String(d);
+    const r = table.insertRow();
+
+    if(!workMap.has(dayStr)){
+      r.classList.add("rest");
+      r.insertCell().textContent = dayStr;
+      r.insertCell().textContent = "休假";
+      r.insertCell().textContent = "-";
+      r.insertCell().textContent = "-";
+      r.insertCell().textContent = "-";
+      r.insertCell().textContent = "-";
+      r.insertCell().textContent = "-";
+      continue;
+    }
+
+    const timeRange = workMap.get(dayStr);
+    let [sTime,eTime] = timeRange.split("-");
+    let s = time2h(sTime);
+    let e = time2h(eTime);
+    let rawTotal = e - s;
+
+    let deductNoon = 1;
+    let deductNight = e > 19 ? 0.5 : 0;
+    let totalDeduct = deductNoon + deductNight;
+    let deductText = "-" + totalDeduct.toFixed(1) + "h";
+
+    let workH = rawTotal - totalDeduct;
+    if(workH < 0) workH = 0;
+
+    let otH, otMoney;
+
+    if(holidaySet.has(dayStr)){
+      otH = workH;
+      otMoney = otH * priceHoliday;
+      holidayOtHour += otH;
+      holidayOtMoney += otMoney;
+      r.classList.add("holiday");
+    }else{
+      otH = Math.max(0, workH - 8);
+      otMoney = otH * priceNormalOt;
+      normalOtHour += otH;
+      normalOtMoney += otMoney;
+    }
+
+    r.insertCell().textContent = dayStr;
+    r.insertCell().textContent = timeRange;
+    r.insertCell().textContent = rawTotal.toFixed(1) + "h";
+    r.insertCell().textContent = deductText;
+    r.insertCell().textContent = workH.toFixed(1) + "h";
+    r.insertCell().textContent = otH.toFixed(1) + "h";
+    r.insertCell().textContent = otMoney.toFixed(2);
+  }
+
+  const totalOtMoney = normalOtMoney + holidayOtMoney;
+  const totalIncome = baseSalary + totalOtMoney;
+
+  document.getElementById("sumBox").innerHTML = `
+法定节假日加班时长：${holidayOtHour.toFixed(1)}h<br>
+法定节假日加班费：${holidayOtMoney.toFixed(2)}元<br>
+<br>
+平日加班时长：${normalOtHour.toFixed(1)}h<br>
+平日加班费：${normalOtMoney.toFixed(2)}元<br>
+<br>
+全部加班费合计：${totalOtMoney.toFixed(2)}元<br>
+底薪：${baseSalary}元<br>
+总收入：${totalIncome.toFixed(2)}元
+  `;
+}
+
+calc();
+</script>
+</body>
+</html>
