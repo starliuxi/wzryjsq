@@ -1,26 +1,308 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>工时批量计算器</title>
-<style>
-*{box-sizing:border-box;font-family:system-ui}
-.wrap{width:95%;max-width:1100px;margin:20px auto}
-textarea{width:100%;height:180px;padding:8px;font-size:14px}
-button{margin:10px 0;padding:8px 16px;font-size:15px;cursor:pointer}
-table {border-collapse: collapse; width:100%;margin:15px 0;}
-th,td {border:1px solid #999;padding:8px;text-align:center;white-space:nowrap;}
-th{background:#f0f0f0;}
-.holiday{background:#fff4d6;color:#b56500;font-weight:600;}
-.rest{background:#f9f9f9;color:#888;}
-.sum{line-height:1.8;font-size:16px;margin-top:10px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>工时批量计算器</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 100%); 
+            min-height: 100vh; 
+            font-family: 'Courier New', monospace, system-ui, -apple-system, 'Segoe UI', sans-serif; 
+            padding: 16px; 
+            color: #333;
+            position: relative;
+            overflow-x: hidden;
+        }
+        body::before, body::after, .cloud-1, .cloud-2 {
+            content: "";
+            position: absolute;
+            width: 120px;
+            height: 40px;
+            background: #fff;
+            border-radius: 2px;
+            opacity: 0.8;
+        }
+        body::before { top: 50px; left: 10%; }
+        body::after { top: 150px; right: 15%; width: 160px; height: 50px; }
+        .cloud-1 { top: 250px; left: 30%; width: 100px; height: 35px; }
+        .cloud-2 { top: 350px; right: 5%; width: 140px; height: 45px; }
+
+        .container { max-width: 700px; margin: 0 auto; position: relative; z-index: 1; }
+        .pixel-header {
+            background: #3b2415;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px 8px 0 0;
+            border-bottom: 4px solid #5a3a20;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .star-badge {
+            background: #5a3a20;
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .star-icon {
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        .card { 
+            background: #fffef7; 
+            border-radius: 0 0 16px 16px; 
+            overflow: hidden; 
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
+            margin-bottom: 20px; 
+            border: 4px solid #5a3a20;
+            border-top: none;
+        }
+        .content { padding: 20px; }
+
+        .textarea-wrapper {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        textarea { 
+            width: 100%; 
+            padding: 14px; 
+            padding-bottom: 50px;
+            font-family: monospace; 
+            font-size: 0.85rem; 
+            border: 3px solid #5a3a20; 
+            border-radius: 8px; 
+            background: #fefcf5; 
+            resize: vertical; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .textarea-actions {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            display: flex;
+            gap: 1px;
+            z-index: 5;
+        }
+
+        .action-btn {
+            padding: 5px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border: 2px solid #5a3a20;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #5a4a2a;
+            background: #f0e6cc;
+            display: flex;
+            align-items: center;
+            min-width: auto;
+            flex: none;
+        }
+        .action-btn:active { 
+            transform: scale(0.95); 
+            background: #d9c9a8; 
+        }
+        .action-btn.copied {
+            background: #c8e6c9;
+            color: #2e5a2e;
+            border-color: #2e5a2e;
+        }
+        .action-btn.pasted {
+            background: #c8e6c9;
+            color: #2e5a2e;
+            border-color: #2e5a2e;
+        }
+
+        .input-row{
+            margin-bottom:10px;
+            display:flex;
+            align-items:center;
+            gap:6px;
+        }
+        .input-row label{
+            white-space: nowrap;
+            width:auto;
+            font-weight:bold;
+            color:#3b2415;
+        }
+        .input-row input{
+            flex:1;
+            padding:6px 8px;
+            border:2px solid #5a3a20;
+            border-radius:4px;
+            font-family:monospace;
+            font-size:0.9rem;
+        }
+
+        .btn-group { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 20px; 
+            flex-wrap: wrap; 
+        }
+        button { 
+            flex: 1; 
+            background: #27ae60; 
+            border: 3px solid #1e8449;
+            padding: 12px; 
+            font-size: 1rem; 
+            font-weight: bold; 
+            color: white; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            min-width: 80px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        button:active { transform: scale(0.97); background: #1e8449; }
+        .reset-btn { background: #d35400; border-color: #a04000; }
+
+        .local-time-panel {
+            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            border: 3px solid #1e8449;
+        }
+        .local-time-value {
+            font-size: 2rem;
+            font-weight: 700;
+            font-family: monospace;
+            letter-spacing: 2px;
+        }
+        .time-right { text-align: right; }
+        .local-date-value { font-size: 0.85rem; opacity: 0.8; }
+        .localWeekday { font-size: 0.85rem; opacity: 0.8; }
+
+        table{
+            width:100%;
+            border-collapse: collapse;
+            margin-bottom:16px;
+            font-family:monospace;
+            table-layout: fixed;
+        }
+        table th,table td{
+            border:2px solid #5a3a20;
+            padding:3px 2px;
+            text-align:center;
+            font-size:0.72rem;
+        }
+        table col:nth-child(1) { width: 10%; }
+        table col:nth-child(2) { width: 18%; }
+        table col:nth-child(3) { width: 14%; }
+        table col:nth-child(4) { width: 10%; }
+        table col:nth-child(5) { width: 14%; }
+        table col:nth-child(6) { width: 14%; }
+        table col:nth-child(7) { width: 20%; }
+
+        table th{
+            background:#3b2415;
+            color:white;
+        }
+        .rest-row{
+            background:#e9e2d0;
+            color:#666;
+        }
+        .holiday-row{
+            background:#ffedb3;
+        }
+
+        .summary-box{
+            background:#f2ecda;
+            border:2px solid #5a3a20;
+            border-radius:8px;
+            padding:16px;
+            font-family:monospace;
+            line-height:1.8;
+            font-size:0.95rem;
+        }
+        .warn-tip{
+            margin-top:10px;
+            padding:6px 10px;
+            background:#fff2cc;
+            border:2px solid #f6c343;
+            border-radius:6px;
+            color:#b47c00;
+            font-weight:bold;
+            text-align:center;
+        }
+        .footnote { 
+            font-size: 0.65rem; 
+            text-align: center; 
+            color: #9e8a60; 
+            margin-top: 16px; 
+            padding-top: 12px; 
+            border-top: 1px solid #e7dcbe; 
+        }
+        .pixel-ground {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: #8B4513;
+            border-top: 4px solid #654321;
+            z-index: 0;
+        }
+        .pixel-ground::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: #228B22;
+        }
+    </style>
 </head>
 <body>
-<div class="wrap">
-<h3>输入：上班日期，一行一条，如 1 7-16:30；自动识别最小/最大日期，中间缺失日期显示休假</h3>
-<textarea id="inputData">
-1 7-16:30
+    <div class="cloud-1"></div>
+    <div class="cloud-2"></div>
+    <div class="pixel-ground"></div>
+    <div class="container">
+        <div class="pixel-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 30px; height: 30px; background: #3498db; border-radius: 4px; position: relative;">
+                    <div style="position: absolute; top: 5px; left: 5px; width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+                    <div style="position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+                    <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 12px; height: 6px; background: #f39c12; border-radius: 0 0 4px 4px;"></div>
+                </div>
+                <span style="font-weight: bold;">工时批量计算器</span>
+            </div>
+            <div class="star-badge">
+                <div class="star-icon"></div>
+                <span id="countDay">0</span>
+            </div>
+        </div>
+        <div class="card">
+            <div class="content">
+                <div class="local-time-panel" onclick="location.href='https://ikuun.de5.net/农场.html'">
+                    <div class="local-time-value" id="localTime">--:--:--</div>
+                    <div class="time-right">
+                        <div class="local-date-value" id="localDate">----年--月--日</div>
+                        <div class="localWeekday" id="localWeekday">星期-</div>
+                    </div>
+                </div>
+
+                <div class="textarea-wrapper">
+                    <textarea id="rawData" rows="6" wrap="soft">1 7-16:30
 2 7-16:30
 3 7-16
 4 6-19
@@ -39,126 +321,231 @@ th{background:#f0f0f0;}
 17 7-19
 18 7-18:30
 19 7-22
-20 7-22
-</textarea>
-<br>
-<button onclick="calc()">开始批量计算</button>
+20 7-22</textarea>
+                    <div class="textarea-actions">
+                        <button class="action-btn" id="pasteBtn" onclick="pasteText()">粘贴</button>
+                        <button class="action-btn" id="copyBtn" onclick="copyText()">复制</button>
+                    </div>
+                </div>
 
-<table id="resultTable">
-  <tr>
-    <th>日</th>
-    <th>上下班</th>
-    <th>原始时长</th>
-    <th>扣减</th>
-    <th>在岗时长</th>
-    <th>加班时长</th>
-    <th>加班费</th>
-  </tr>
-</table>
-<div class="sum" id="sumBox"></div>
-</div>
+                <div class="input-row">
+                    <label>(房补/绩效)：</label>
+                    <input type="number" id="otherSubsidy" value="0" step="0.01">
+                    <span>元</span>
+                </div>
+                <div class="input-row">
+                    <label>饭补天数：</label>
+                    <input type="number" id="mealDay" value="" min="0">
+                    <span>天</span>
+                </div>
 
+                <div class="btn-group">
+                    <button id="calcBtn">开始批量计算</button>
+                    <button id="clearBtn" class="reset-btn">清空</button>
+                </div>
+
+                <div id="resultArea"></div>
+                <div class="footnote"></div>
+            </div>
+        </div>
+    </div>
 <script>
-// ===== 配置（固定规则，需要改这里）=====
+function pasteText() {
+    const pasteBtn = document.getElementById('pasteBtn');
+    const textarea = document.getElementById('rawData');
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText().then(text => {
+            textarea.value = text;
+            pasteBtn.classList.add('pasted');
+            pasteBtn.textContent = '已粘贴';
+            setTimeout(() => {
+                pasteBtn.classList.remove('pasted');
+                pasteBtn.textContent = '粘贴';
+            }, 1500);
+        }).catch(() => textarea.focus());
+    } else textarea.focus();
+}
+function copyText() {
+    const textarea = document.getElementById('rawData');
+    const copyBtn = document.getElementById('copyBtn');
+    textarea.select();
+    try {
+        navigator.clipboard.writeText(textarea.value).then(() => {
+            copyBtn.classList.add('copied');
+            copyBtn.textContent = '已复制';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.textContent = '复制';
+            }, 1500);
+        }).catch(() => {
+            document.execCommand('copy');
+            copyBtn.classList.add('copied');
+            copyBtn.textContent = '已复制';
+            setTimeout(() => {
+                copyBtn.classList.remove('copied');
+                copyBtn.textContent = '复制';
+            }, 1500);
+        });
+    } catch (err) {
+        document.execCommand('copy');
+        copyBtn.classList.add('copied');
+        copyBtn.textContent = '已复制';
+        setTimeout(() => {
+            copyBtn.classList.remove('copied');
+            copyBtn.textContent = '复制';
+        }, 1500);
+    }
+}
+
 const holidaySet = new Set(["1","2","3"]);
 const priceHoliday = 66;
 const priceNormalOt = 22;
 const baseSalary = 4000;
+const mealPrice = 13;
+const taxThreshold = 5000;
+
+function updateLocalTime() {
+  let now = new Date();
+  let h = now.getHours().toString().padStart(2, '0');
+  let m = now.getMinutes().toString().padStart(2, '0');
+  let s = now.getSeconds().toString().padStart(2, '0');
+  let Y = now.getFullYear();
+  let M = (now.getMonth()+1).toString().padStart(2, '0');
+  let D = now.getDate().toString().padStart(2, '0');
+  let wd = '日一二三四五六'[now.getDay()];
+  document.getElementById('localTime').textContent = `${h}:${m}:${s}`;
+  document.getElementById('localDate').textContent = `${Y}年${M}月${D}`;
+  document.getElementById('localWeekday').textContent = `星期${wd}`;
+}
 
 function time2h(str){
-  str = str.trim();
-  if(str.includes(":")){
-    let [h,m] = str.split(":").map(Number);
-    return h + m/60;
+    const [h,mi] = str.split(":").map(Number);
+    return h + (mi||0)/60;
+}
+function calcPersonalTax(taxableIncome){
+  if(taxableIncome <= 0) return 0;
+  let tax = 0;
+  if(taxableIncome <= 3000){
+    tax = taxableIncome * 0.03;
+  }else if(taxableIncome <= 12000){
+    tax = taxableIncome * 0.1 - 210;
+  }else if(taxableIncome <=25000){
+    tax = taxableIncome *0.2 -1410;
+  }else if(taxableIncome <=35000){
+    tax = taxableIncome *0.25 -2660;
+  }else if(taxableIncome <=55000){
+    tax = taxableIncome *0.3 -4410;
+  }else if(taxableIncome <=80000){
+    tax = taxableIncome *0.35 -7160;
   }else{
-    return Number(str);
+    tax = taxableIncome *0.45 -15160;
   }
+  return tax;
+}
+
+function parseLines(text){
+    const lines = text.split("\n").filter(l=>l.trim());
+    const dayMap = new Map();
+    let dayList = [];
+    for(let line of lines){
+        const parts = line.trim().split(/\s+/);
+        if(parts.length<2) continue;
+        const day = parts[0];
+        const timeRange = parts[1];
+        dayMap.set(Number(day), timeRange);
+        dayList.push(Number(day));
+    }
+    return {dayMap, dayList};
 }
 
 function calc(){
-  const text = document.getElementById("inputData").value.trim();
-  const lines = text.split("\n").filter(x=>x.trim());
-  const table = document.getElementById("resultTable");
-
-  while(table.rows.length>1) table.deleteRow(1);
-
-  let normalOtHour = 0;
-  let normalOtMoney = 0;
-  let holidayOtHour = 0;
-  let holidayOtMoney = 0;
-
-  const workMap = new Map();
-  const dayList = [];
-
-  for(let line of lines){
-    let [day,timeRange] = line.trim().split(/\s+/);
-    workMap.set(day, timeRange);
-    dayList.push(parseInt(day));
-  }
-
-  if(dayList.length === 0) return;
-
-  const minDay = Math.min(...dayList);
-  const maxDay = Math.max(...dayList);
-
-  for(let d = minDay; d <= maxDay; d++){
-    const dayStr = String(d);
-    const r = table.insertRow();
-
-    if(!workMap.has(dayStr)){
-      r.classList.add("rest");
-      r.insertCell().textContent = dayStr;
-      r.insertCell().textContent = "休假";
-      r.insertCell().textContent = "-";
-      r.insertCell().textContent = "-";
-      r.insertCell().textContent = "-";
-      r.insertCell().textContent = "-";
-      r.insertCell().textContent = "-";
-      continue;
+    const raw = document.getElementById("rawData").value;
+    const {dayMap, dayList} = parseLines(raw);
+    if(dayList.length===0){
+        document.getElementById("resultArea").innerHTML="<div style='text-align:center;padding:20px'>无数据</div>";
+        document.getElementById("countDay").textContent="0";
+        return;
     }
+    const minDay = Math.min(...dayList);
+    const maxDay = Math.max(...dayList);
 
-    const timeRange = workMap.get(dayStr);
-    let [sTime,eTime] = timeRange.split("-");
-    let s = time2h(sTime);
-    let e = time2h(eTime);
-    let rawTotal = e - s;
+    let htmlTable = `<table>
+    <colgroup>
+        <col><col><col><col><col><col><col>
+    </colgroup>
+    <thead>
+        <tr>
+            <th>日</th>
+            <th>时段</th>
+            <th>原始h</th>
+            <th>扣减</th>
+            <th>在岗h</th>
+            <th>加班h</th>
+            <th>加班费</th>
+        </tr>
+    </thead><tbody>`;
 
-    let deductNoon = 1;
-    let deductNight = e > 19 ? 0.5 : 0;
-    let totalDeduct = deductNoon + deductNight;
-    let deductText = "-" + totalDeduct.toFixed(1) + "h";
+    let normalOtHour = 0;
+    let normalOtMoney = 0;
+    let holidayOtHour = 0;
+    let holidayOtMoney = 0;
 
-    let workH = rawTotal - totalDeduct;
-    if(workH < 0) workH = 0;
+    for(let d = minDay; d <= maxDay; d++){
+        if(!dayMap.has(d)){
+            htmlTable += `<tr class="rest-row"><td>${d}</td><td>休假</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
+            continue;
+        }
+        const timeStr = dayMap.get(d);
+        const [startStr,endStr] = timeStr.split("-");
+        const start = time2h(startStr);
+        const end = time2h(endStr);
+        const rawTotal = end - start;
 
-    let otH, otMoney;
+        let deduct = 1;
+        if(end>19) deduct +=0.5;
+        const workH = rawTotal - deduct;
 
-    if(holidaySet.has(dayStr)){
-      otH = workH;
-      otMoney = otH * priceHoliday;
-      holidayOtHour += otH;
-      holidayOtMoney += otMoney;
-      r.classList.add("holiday");
-    }else{
-      otH = Math.max(0, workH - 8);
-      otMoney = otH * priceNormalOt;
-      normalOtHour += otH;
-      normalOtMoney += otMoney;
+        let otH = 0;
+        let otMoney = 0;
+        const dayStr = String(d);
+        if(holidaySet.has(dayStr)){
+            otH = workH;
+            otMoney = otH * priceHoliday;
+            holidayOtHour += otH;
+            holidayOtMoney += otMoney;
+            htmlTable += `<tr class="holiday-row">`;
+        }else{
+            otH = Math.max(0, workH - 8);
+            otMoney = otH * priceNormalOt;
+            normalOtHour += otH;
+            normalOtMoney += otMoney;
+            htmlTable += `<tr>`;
+        }
+        htmlTable += `
+            <td>${d}</td>
+            <td>${timeStr}</td>
+            <td>${rawTotal.toFixed(1)}</td>
+            <td>-${deduct.toFixed(1)}</td>
+            <td>${workH.toFixed(1)}</td>
+            <td>${otH.toFixed(1)}</td>
+            <td>${otMoney.toFixed(2)}</td>
+        </tr>`;
     }
+    htmlTable += `</tbody></table>`;
+    document.getElementById("countDay").textContent = dayList.length;
 
-    r.insertCell().textContent = dayStr;
-    r.insertCell().textContent = timeRange;
-    r.insertCell().textContent = rawTotal.toFixed(1) + "h";
-    r.insertCell().textContent = deductText;
-    r.insertCell().textContent = workH.toFixed(1) + "h";
-    r.insertCell().textContent = otH.toFixed(1) + "h";
-    r.insertCell().textContent = otMoney.toFixed(2);
-  }
+    const totalOtMoney = normalOtMoney + holidayOtMoney;
+    const otherSubsidy = Number(document.getElementById("otherSubsidy").value)||0;
+    const mealDay = Number(document.getElementById("mealDay").value);
+    const mealTotal = isNaN(mealDay) || mealDay <= 0 ? 0 : mealDay * mealPrice;
 
-  const totalOtMoney = normalOtMoney + holidayOtMoney;
-  const totalIncome = baseSalary + totalOtMoney;
+    let preTaxIncome = baseSalary + totalOtMoney + otherSubsidy + mealTotal;
+    const taxableIncome = Math.max(0, preTaxIncome - taxThreshold);
+    const tax = calcPersonalTax(taxableIncome);
+    const afterTaxIncome = preTaxIncome - tax;
 
-  document.getElementById("sumBox").innerHTML = `
+    let summaryHtml = `
+    <div class="summary-box">
 法定节假日加班时长：${holidayOtHour.toFixed(1)}h<br>
 法定节假日加班费：${holidayOtMoney.toFixed(2)}元<br>
 <br>
@@ -167,11 +554,39 @@ function calc(){
 <br>
 全部加班费合计：${totalOtMoney.toFixed(2)}元<br>
 底薪：${baseSalary}元<br>
-总收入：${totalIncome.toFixed(2)}元
-  `;
+(房补/绩效)：${otherSubsidy.toFixed(2)}元<br>
+    `;
+    if(mealTotal>0){
+        summaryHtml += `饭补：${mealTotal.toFixed(2)}元<br>`;
+    }
+    summaryHtml += `
+税前收入：${preTaxIncome.toFixed(2)}元<br>
+个税：${tax.toFixed(2)}元<br>
+税后收入：${afterTaxIncome.toFixed(2)}元<br>
+<br>
+注：个税仅简易估算，以工资条为准
+</div>`;
+
+    if(isNaN(mealDay) || mealDay <= 0){
+        summaryHtml += `<div class="warn-tip">⚠️ 饭补未计入</div>`;
+    }
+
+    document.getElementById("resultArea").innerHTML = htmlTable + summaryHtml;
 }
 
-calc();
+document.getElementById("calcBtn").onclick = calc;
+document.getElementById("clearBtn").onclick = ()=>{
+    document.getElementById("rawData").value = "";
+    document.getElementById("otherSubsidy").value = 0;
+    document.getElementById("mealDay").value = "";
+    document.getElementById("resultArea").innerHTML = "";
+    document.getElementById("countDay").textContent="0";
+}
+
+window.addEventListener('load', () => {
+  updateLocalTime();
+});
+setInterval(updateLocalTime,1000);
 </script>
 </body>
 </html>
