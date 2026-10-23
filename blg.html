@@ -223,7 +223,26 @@
         .holiday-row{
             background:#ffedb3;
         }
-
+        .date-cell {
+            position: relative;
+            padding: 4px;
+        }
+        .tag-lian {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background-color: #e63946;
+            color: #fff;
+            font-size: 6px;
+            line-height: 9px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
         .summary-box{
             background:#f2ecda;
             border:2px solid #5a3a20;
@@ -321,7 +340,9 @@
 17 7-19
 18 7-18:30
 19 7-22
-20 7-22</textarea>
+20 7-22
+21 7-22
+22 7-23:30l</textarea>
                     <div class="textarea-actions">
                         <button class="action-btn" id="pasteBtn" onclick="pasteText()">粘贴</button>
                         <button class="action-btn" id="copyBtn" onclick="copyText()">复制</button>
@@ -422,45 +443,47 @@ function time2h(str){
     const [h,mi] = str.split(":").map(Number);
     return h + (mi||0)/60;
 }
+function formatHour(n) {
+    const val = Number(n);
+    if (Number.isInteger(val)) return val.toString();
+    return val.toFixed(1);
+}
+function formatMoney(n) {
+    const val = Number(n);
+    if (Number.isInteger(val)) return val.toString();
+    return val.toFixed(2);
+}
+
 function calcPersonalTax(taxableIncome){
   if(taxableIncome <= 0) return 0;
-  let tax = 0;
-  if(taxableIncome <= 3000){
-    tax = taxableIncome * 0.03;
-  }else if(taxableIncome <= 12000){
-    tax = taxableIncome * 0.1 - 210;
-  }else if(taxableIncome <=25000){
-    tax = taxableIncome *0.2 -1410;
-  }else if(taxableIncome <=35000){
-    tax = taxableIncome *0.25 -2660;
-  }else if(taxableIncome <=55000){
-    tax = taxableIncome *0.3 -4410;
-  }else if(taxableIncome <=80000){
-    tax = taxableIncome *0.35 -7160;
-  }else{
-    tax = taxableIncome *0.45 -15160;
-  }
-  return tax;
+  return taxableIncome * 0.03;
 }
 
 function parseLines(text){
     const lines = text.split("\n").filter(l=>l.trim());
     const dayMap = new Map();
+    const isLianbanMap = new Map();
     let dayList = [];
     for(let line of lines){
         const parts = line.trim().split(/\s+/);
         if(parts.length<2) continue;
         const day = parts[0];
-        const timeRange = parts[1];
+        let timeRange = parts[1];
+        let isLian = false;
+        if(timeRange.toLowerCase().endsWith('l')){
+            isLian = true;
+            timeRange = timeRange.slice(0,-1).trim();
+        }
         dayMap.set(Number(day), timeRange);
+        isLianbanMap.set(Number(day), isLian);
         dayList.push(Number(day));
     }
-    return {dayMap, dayList};
+    return {dayMap, isLianbanMap, dayList};
 }
 
 function calc(){
     const raw = document.getElementById("rawData").value;
-    const {dayMap, dayList} = parseLines(raw);
+    const {dayMap, isLianbanMap, dayList} = parseLines(raw);
     if(dayList.length===0){
         document.getElementById("resultArea").innerHTML="<div style='text-align:center;padding:20px'>无数据</div>";
         document.getElementById("countDay").textContent="0";
@@ -496,13 +519,19 @@ function calc(){
             continue;
         }
         const timeStr = dayMap.get(d);
+        const isLianban = isLianbanMap.get(d);
         const [startStr,endStr] = timeStr.split("-");
         const start = time2h(startStr);
         const end = time2h(endStr);
         const rawTotal = end - start;
 
-        let deduct = 1;
-        if(end>19) deduct +=0.5;
+        let deduct;
+        if(isLianban){
+            deduct = 1;
+        }else{
+            deduct = 1;
+            if(end>19) deduct +=0.5;
+        }
         const workH = rawTotal - deduct;
 
         let otH = 0;
@@ -521,14 +550,18 @@ function calc(){
             normalOtMoney += otMoney;
             htmlTable += `<tr>`;
         }
+        if(isLianban){
+            htmlTable += `<td class="date-cell">${d}<span class="tag-lian">连</span></td>`;
+        }else{
+            htmlTable += `<td>${d}</td>`;
+        }
         htmlTable += `
-            <td>${d}</td>
             <td>${timeStr}</td>
-            <td>${rawTotal.toFixed(1)}</td>
-            <td>-${deduct.toFixed(1)}</td>
-            <td>${workH.toFixed(1)}</td>
-            <td>${otH.toFixed(1)}</td>
-            <td>${otMoney.toFixed(2)}</td>
+            <td>${formatHour(rawTotal)}</td>
+            <td>-${formatHour(deduct)}</td>
+            <td>${formatHour(workH)}</td>
+            <td>${formatHour(otH)}</td>
+            <td>${formatMoney(otMoney)}</td>
         </tr>`;
     }
     htmlTable += `</tbody></table>`;
@@ -546,25 +579,25 @@ function calc(){
 
     let summaryHtml = `
     <div class="summary-box">
-法定节假日加班时长：${holidayOtHour.toFixed(1)}h<br>
-法定节假日加班费：${holidayOtMoney.toFixed(2)}元<br>
+法定节假日加班时长：${formatHour(holidayOtHour)}h<br>
+法定节假日加班费：${formatMoney(holidayOtMoney)}元<br>
 <br>
-平日加班时长：${normalOtHour.toFixed(1)}h<br>
-平日加班费：${normalOtMoney.toFixed(2)}元<br>
+平日加班时长：${formatHour(normalOtHour)}h<br>
+平日加班费：${formatMoney(normalOtMoney)}元<br>
 <br>
-全部加班费合计：${totalOtMoney.toFixed(2)}元<br>
-底薪：${baseSalary}元<br>
-(房补/绩效)：${otherSubsidy.toFixed(2)}元<br>
+全部加班费合计：${formatMoney(totalOtMoney)}元<br>
+底薪：${formatMoney(baseSalary)}元<br>
+(房补/绩效)：${formatMoney(otherSubsidy)}元<br>
     `;
     if(mealTotal>0){
-        summaryHtml += `饭补：${mealTotal.toFixed(2)}元<br>`;
+        summaryHtml += `饭补：${formatMoney(mealTotal)}元<br>`;
     }
     summaryHtml += `
-税前收入：${preTaxIncome.toFixed(2)}元<br>
-个税：${tax.toFixed(2)}元<br>
-税后收入：${afterTaxIncome.toFixed(2)}元<br>
+税前收入：${formatMoney(preTaxIncome)}元<br>
+个税：${formatMoney(tax)}元<br>
+税后收入：${formatMoney(afterTaxIncome)}元<br>
 <br>
-注：个税仅简易估算，以工资条为准
+注：个税按3%简易估算，以工资条为准
 </div>`;
 
     if(isNaN(mealDay) || mealDay <= 0){
