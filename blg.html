@@ -6,620 +6,275 @@
     <title>工时批量计算器</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 100%); 
-            min-height: 100vh; 
-            font-family: 'Courier New', monospace, system-ui, -apple-system, 'Segoe UI', sans-serif; 
-            padding: 16px; 
+        body {
+            background: linear-gradient(180deg, #87CEEB 0%, #B0E0FF 100%);
+            min-height: 100vh;
+            font-family: 'Courier New', monospace, system-ui, -apple-system, 'Segoe UI', sans-serif;
+            padding: 16px;
             color: #333;
-            position: relative;
-            overflow-x: hidden;
         }
-        body::before, body::after, .cloud-1, .cloud-2 {
-            content: "";
-            position: absolute;
-            width: 120px;
-            height: 40px;
-            background: #fff;
-            border-radius: 2px;
-            opacity: 0.8;
+        .wrap{
+            max-width: 1000px;
+            margin:0 auto;
         }
-        body::before { top: 50px; left: 10%; }
-        body::after { top: 150px; right: 15%; width: 160px; height: 50px; }
-        .cloud-1 { top: 250px; left: 30%; width: 100px; height: 35px; }
-        .cloud-2 { top: 350px; right: 5%; width: 140px; height: 45px; }
-
-        .container { max-width: 700px; margin: 0 auto; position: relative; z-index: 1; }
-        .pixel-header {
-            background: #3b2415;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 8px 8px 0 0;
-            border-bottom: 4px solid #5a3a20;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .card{
+            background:#fff;
+            border-radius:12px;
+            padding:14px;
+            margin-bottom:12px;
+            box-shadow:0 2px 8px #00000022;
         }
-        .star-badge {
-            background: #5a3a20;
-            padding: 4px 12px;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .star-icon {
-            width: 20px;
-            height: 20px;
-            background: #ffd700;
-            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-        }
-        .card { 
-            background: #fffef7; 
-            border-radius: 0 0 16px 16px; 
-            overflow: hidden; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25); 
-            margin-bottom: 20px; 
-            border: 4px solid #5a3a20;
-            border-top: none;
-        }
-        .content { padding: 20px; }
-
-        .textarea-wrapper {
-            position: relative;
-            margin-bottom: 16px;
-        }
-
-        textarea { 
-            width: 100%; 
-            padding: 14px; 
-            padding-bottom: 50px;
-            font-family: monospace; 
-            font-size: 0.85rem; 
-            border: 3px solid #5a3a20; 
-            border-radius: 8px; 
-            background: #fefcf5; 
-            resize: vertical; 
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-        }
-
-        .textarea-actions {
-            position: absolute;
-            bottom: 14px;
-            right: 14px;
-            display: flex;
-            gap: 1px;
-            z-index: 5;
-        }
-
-        .action-btn {
-            padding: 5px 12px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            border: 2px solid #5a3a20;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: #5a4a2a;
-            background: #f0e6cc;
-            display: flex;
-            align-items: center;
-            min-width: auto;
-            flex: none;
-        }
-        .action-btn:active { 
-            transform: scale(0.95); 
-            background: #d9c9a8; 
-        }
-        .action-btn.copied {
-            background: #c8e6c9;
-            color: #2e5a2e;
-            border-color: #2e5a2e;
-        }
-        .action-btn.pasted {
-            background: #c8e6c9;
-            color: #2e5a2e;
-            border-color: #2e5a2e;
-        }
-
         .input-row{
-            margin-bottom:10px;
             display:flex;
+            gap:10px;
+            flex-wrap:wrap;
             align-items:center;
-            gap:6px;
+            margin-bottom:10px;
         }
         .input-row label{
-            white-space: nowrap;
-            width:auto;
-            font-weight:bold;
-            color:#3b2415;
+            white-space:nowrap;
         }
-        .input-row input{
-            flex:1;
+        input{
             padding:6px 8px;
-            border:2px solid #5a3a20;
-            border-radius:4px;
-            font-family:monospace;
-            font-size:0.9rem;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:14px;
         }
-
-        .btn-group { 
-            display: flex; 
-            gap: 12px; 
-            margin-bottom: 20px; 
-            flex-wrap: wrap; 
+        textarea{
+            width:100%;
+            height:120px;
+            padding:8px;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:14px;
         }
-        button { 
-            flex: 1; 
-            background: #27ae60; 
-            border: 3px solid #1e8449;
-            padding: 12px; 
-            font-size: 1rem; 
-            font-weight: bold; 
-            color: white; 
-            border-radius: 8px; 
-            cursor: pointer; 
-            min-width: 80px;
-            transition: all 0.2s;
-            font-family: inherit;
+        button{
+            padding:8px 14px;
+            border:none;
+            background:#2b7cd3;
+            color:white;
+            border-radius:6px;
+            font-size:15px;
+            cursor:pointer;
         }
-        button:active { transform: scale(0.97); background: #1e8449; }
-        .reset-btn { background: #d35400; border-color: #a04000; }
-
-        .local-time-panel {
-            background: linear-gradient(135deg, #27ae60 0%, #1e8449 100%);
-            border-radius: 8px;
-            padding: 12px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            cursor: pointer;
-            border: 3px solid #1e8449;
+        .table-wrap{
+            overflow-x:auto;
         }
-        .local-time-value {
-            font-size: 2rem;
-            font-weight: 700;
-            font-family: monospace;
-            letter-spacing: 2px;
-        }
-        .time-right { text-align: right; }
-        .local-date-value { font-size: 0.85rem; opacity: 0.8; }
-        .localWeekday { font-size: 0.85rem; opacity: 0.8; }
-
         table{
             width:100%;
             border-collapse: collapse;
-            margin-bottom:16px;
-            font-family:monospace;
-            table-layout: fixed;
+            font-size:13px;
         }
-        table th,table td{
-            border:2px solid #5a3a20;
-            padding:3px 2px;
+        th,td{
+            border:1px solid #aaa;
+            padding:5px;
             text-align:center;
-            font-size:0.72rem;
+            position:relative;
         }
-        table col:nth-child(1) { width: 10%; }
-        table col:nth-child(2) { width: 18%; }
-        table col:nth-child(3) { width: 14%; }
-        table col:nth-child(4) { width: 10%; }
-        table col:nth-child(5) { width: 14%; }
-        table col:nth-child(6) { width: 14%; }
-        table col:nth-child(7) { width: 20%; }
-
-        table th{
-            background:#3b2415;
+        th{
+            background:#eef6ff;
+        }
+        /* 红圈白字 连标，单元格内右上角，不溢出格子 */
+        .tag-lian{
+            position:absolute;
+            top:2px;
+            right:2px;
+            width:14px;
+            height:14px;
+            border-radius:50%;
+            background:#d92222;
             color:white;
+            font-size:10px;
+            line-height:14px;
         }
-        .rest-row{
-            background:#e9e2d0;
-            color:#666;
+        .warn{
+            color:#c82423;
+            margin:8px 0;
         }
-        .holiday-row{
-            background:#ffedb3;
-        }
-        .date-cell {
-            position: relative;
-            padding: 4px;
-        }
-        .tag-lian {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 9px;
-            height: 9px;
-            border-radius: 50%;
-            background-color: #e63946;
-            color: #fff;
-            font-size: 6px;
-            line-height: 9px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
-        .summary-box{
-            background:#f2ecda;
-            border:2px solid #5a3a20;
-            border-radius:8px;
-            padding:16px;
-            font-family:monospace;
-            line-height:1.8;
-            font-size:0.95rem;
-        }
-        .warn-tip{
-            margin-top:10px;
-            padding:6px 10px;
-            background:#fff2cc;
-            border:2px solid #f6c343;
-            border-radius:6px;
-            color:#b47c00;
-            font-weight:bold;
-            text-align:center;
-        }
-        .footnote { 
-            font-size: 0.65rem; 
-            text-align: center; 
-            color: #9e8a60; 
-            margin-top: 16px; 
-            padding-top: 12px; 
-            border-top: 1px solid #e7dcbe; 
-        }
-        .pixel-ground {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: #8B4513;
-            border-top: 4px solid #654321;
-            z-index: 0;
-        }
-        .pixel-ground::before {
-            content: "";
-            position: absolute;
-            top: -10px;
-            left: 0;
-            right: 0;
-            height: 10px;
-            background: #228B22;
+        .sum-text{
+            line-height:1.7;
         }
     </style>
 </head>
 <body>
-    <div class="cloud-1"></div>
-    <div class="cloud-2"></div>
-    <div class="pixel-ground"></div>
-    <div class="container">
-        <div class="pixel-header">
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <div style="width: 30px; height: 30px; background: #3498db; border-radius: 4px; position: relative;">
-                    <div style="position: absolute; top: 5px; left: 5px; width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
-                    <div style="position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
-                    <div style="position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 12px; height: 6px; background: #f39c12; border-radius: 0 0 4px 4px;"></div>
-                </div>
-                <span style="font-weight: bold;">工时批量计算器</span>
-            </div>
-            <div class="star-badge">
-                <div class="star-icon"></div>
-                <span id="countDay">0</span>
-            </div>
+<div class="wrap">
+    <div class="card">
+        <h3>参数设置</h3>
+        <div class="input-row">
+            <label>底薪：</label>
+            <input id="basePay" type="number" value="4000">
+            <label>时薪单价：</label>
+            <input id="hourPrice" type="number" step="0.01" value="">
+            <label>额外补贴(房补/绩效)：</label>
+            <input id="extraSubsidy" type="number" value="">
+            <label>饭补天数：</label>
+            <input id="mealDay" type="number" value="">
         </div>
-        <div class="card">
-            <div class="content">
-                <div class="local-time-panel" onclick="location.href='https://ikuun.de5.net/农场.html'">
-                    <div class="local-time-value" id="localTime">--:--:--</div>
-                    <div class="time-right">
-                        <div class="local-date-value" id="localDate">----年--月--日</div>
-                        <div class="localWeekday" id="localWeekday">星期-</div>
-                    </div>
-                </div>
-
-                <div class="textarea-wrapper">
-                    <textarea id="rawData" rows="6" wrap="soft">1 7-16:30
-2 7-16:30
-3 7-16
-4 6-19
-5 7-22
-6 7-19
-7 7-18
-8 7-18
-9 7-21:30
-10 7-19
-11 7-19
-12 6-19
-13 7-19
-14 7-22
-15 7-22:30
-16 7-21:30
-17 7-19
-18 7-18:30
-19 7-22
-20 7-22
-21 7-22
-22 7-23:30l</textarea>
-                    <div class="textarea-actions">
-                        <button class="action-btn" id="pasteBtn" onclick="pasteText()">粘贴</button>
-                        <button class="action-btn" id="copyBtn" onclick="copyText()">复制</button>
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <label>(房补/绩效)：</label>
-                    <input type="number" id="otherSubsidy" value="0" step="0.01">
-                    <span>元</span>
-                </div>
-                <div class="input-row">
-                    <label>饭补天数：</label>
-                    <input type="number" id="mealDay" value="" min="0">
-                    <span>天</span>
-                </div>
-
-                <div class="btn-group">
-                    <button id="calcBtn">开始批量计算</button>
-                    <button id="clearBtn" class="reset-btn">清空</button>
-                </div>
-
-                <div id="resultArea"></div>
-                <div class="footnote"></div>
-            </div>
+        <div class="input-row">
+            <label>饭补每天：</label>
+            <input id="mealPrice" type="number" value="13">
+            <label>入职月份：</label>
+            <input id="entryMonth" type="number" value="9">
+            <label>当前月份：</label>
+            <input id="curMonth" type="number" value="11">
         </div>
     </div>
+
+    <div class="card">
+        <h3>批量输入班次</h3>
+        <p style="font-size:12px;color:#666;margin:4px 0;">格式示例：1 7-16:30，连班末尾加字母 l → 22 7-23:30l</p>
+        <textarea id="batchInput"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px;">
+            <button onclick="calcAll()">开始计算</button>
+            <button onclick="clearTable()">清空表格</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-wrap">
+            <table id="resultTable">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>上下班</th>
+                        <th>总时长(h)</th>
+                        <th>扣饭后(h)</th>
+                        <th>当日工资</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <div id="warnBox" class="warn"></div>
+        <div id="sumBox" class="sum-text"></div>
+    </div>
+</div>
+
 <script>
-function pasteText() {
-    const pasteBtn = document.getElementById('pasteBtn');
-    const textarea = document.getElementById('rawData');
-    if (navigator.clipboard && navigator.clipboard.readText) {
-        navigator.clipboard.readText().then(text => {
-            textarea.value = text;
-            pasteBtn.classList.add('pasted');
-            pasteBtn.textContent = '已粘贴';
-            setTimeout(() => {
-                pasteBtn.classList.remove('pasted');
-                pasteBtn.textContent = '粘贴';
-            }, 1500);
-        }).catch(() => textarea.focus());
-    } else textarea.focus();
-}
-function copyText() {
-    const textarea = document.getElementById('rawData');
-    const copyBtn = document.getElementById('copyBtn');
-    textarea.select();
-    try {
-        navigator.clipboard.writeText(textarea.value).then(() => {
-            copyBtn.classList.add('copied');
-            copyBtn.textContent = '已复制';
-            setTimeout(() => {
-                copyBtn.classList.remove('copied');
-                copyBtn.textContent = '复制';
-            }, 1500);
-        }).catch(() => {
-            document.execCommand('copy');
-            copyBtn.classList.add('copied');
-            copyBtn.textContent = '已复制';
-            setTimeout(() => {
-                copyBtn.classList.remove('copied');
-                copyBtn.textContent = '复制';
-            }, 1500);
-        });
-    } catch (err) {
-        document.execCommand('copy');
-        copyBtn.classList.add('copied');
-        copyBtn.textContent = '已复制';
-        setTimeout(() => {
-            copyBtn.classList.remove('copied');
-            copyBtn.textContent = '复制';
-        }, 1500);
-    }
+const tbody = document.querySelector('#resultTable tbody');
+const warnBox = document.getElementById('warnBox');
+const sumBox = document.getElementById('sumBox');
+
+// 数字格式化：去掉末尾多余 .00
+function formatNum(n){
+    if(isNaN(n)) return '0';
+    let s = Number(n).toFixed(2);
+    if(s.endsWith('.00')) return s.slice(0,-3);
+    return s;
 }
 
-const holidaySet = new Set(["1","2","3"]);
-const priceHoliday = 66;
-const priceNormalOt = 22;
-const baseSalary = 4000;
-const mealPrice = 13;
-const taxThreshold = 5000;
-
-function updateLocalTime() {
-  let now = new Date();
-  let h = now.getHours().toString().padStart(2, '0');
-  let m = now.getMinutes().toString().padStart(2, '0');
-  let s = now.getSeconds().toString().padStart(2, '0');
-  let Y = now.getFullYear();
-  let M = (now.getMonth()+1).toString().padStart(2, '0');
-  let D = now.getDate().toString().padStart(2, '0');
-  let wd = '日一二三四五六'[now.getDay()];
-  document.getElementById('localTime').textContent = `${h}:${m}:${s}`;
-  document.getElementById('localDate').textContent = `${Y}年${M}月${D}`;
-  document.getElementById('localWeekday').textContent = `星期${wd}`;
+// 时间字符串转分钟 如 "7" → 420，"16:30" → 990
+function timeToMin(str){
+    let arr = str.split(':');
+    return Number(arr[0])*60 + Number(arr[1]||0);
 }
 
-function time2h(str){
-    const [h,mi] = str.split(":").map(Number);
-    return h + (mi||0)/60;
-}
-function formatHour(n) {
-    const val = Number(n);
-    if (Number.isInteger(val)) return val.toString();
-    return val.toFixed(1);
-}
-function formatMoney(n) {
-    const val = Number(n);
-    if (Number.isInteger(val)) return val.toString();
-    return val.toFixed(2);
+// 计算个税：9月入职累计预扣，3%档
+function calcTax(taxable){
+    return taxable * 0.03;
 }
 
-function calcPersonalTax(taxableIncome){
-  if(taxableIncome <= 0) return 0;
-  return taxableIncome * 0.03;
-}
-
-function parseLines(text){
-    const lines = text.split("\n").filter(l=>l.trim());
-    const dayMap = new Map();
-    const isLianbanMap = new Map();
-    let dayList = [];
-    for(let line of lines){
-        const parts = line.trim().split(/\s+/);
-        if(parts.length<2) continue;
-        const day = parts[0];
-        let timeRange = parts[1];
-        let isLian = false;
-        if(timeRange.toLowerCase().endsWith('l')){
-            isLian = true;
-            timeRange = timeRange.slice(0,-1).trim();
-        }
-        dayMap.set(Number(day), timeRange);
-        isLianbanMap.set(Number(day), isLian);
-        dayList.push(Number(day));
-    }
-    return {dayMap, isLianbanMap, dayList};
-}
-
-function calc(){
-    const raw = document.getElementById("rawData").value;
-    const {dayMap, isLianbanMap, dayList} = parseLines(raw);
-    if(dayList.length===0){
-        document.getElementById("resultArea").innerHTML="<div style='text-align:center;padding:20px'>无数据</div>";
-        document.getElementById("countDay").textContent="0";
+function calcAll(){
+    warnBox.innerText = '';
+    tbody.innerHTML = '';
+    const basePay = Number(document.getElementById('basePay').value)||0;
+    const hourPrice = Number(document.getElementById('hourPrice').value)||0;
+    const extraSubsidy = Number(document.getElementById('extraSubsidy').value)||0;
+    const mealDayInput = Number(document.getElementById('mealDay').value);
+    const mealPrice = Number(document.getElementById('mealPrice').value)||0;
+    const entryMonth = Number(document.getElementById('entryMonth').value)||9;
+    const curMonth = Number(document.getElementById('curMonth').value)||11;
+    const batchText = document.getElementById('batchInput').value.trim();
+    if(!batchText){
+        alert('请粘贴班次数据');
         return;
     }
-    const minDay = Math.min(...dayList);
-    const maxDay = Math.max(...dayList);
-
-    let htmlTable = `<table>
-    <colgroup>
-        <col><col><col><col><col><col><col>
-    </colgroup>
-    <thead>
-        <tr>
-            <th>日</th>
-            <th>时段</th>
-            <th>原始h</th>
-            <th>扣减</th>
-            <th>在岗h</th>
-            <th>加班h</th>
-            <th>加班费</th>
-        </tr>
-    </thead><tbody>`;
-
-    let normalOtHour = 0;
-    let normalOtMoney = 0;
-    let holidayOtHour = 0;
-    let holidayOtMoney = 0;
-
-    for(let d = minDay; d <= maxDay; d++){
-        if(!dayMap.has(d)){
-            htmlTable += `<tr class="rest-row"><td>${d}</td><td>休假</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>`;
-            continue;
-        }
-        const timeStr = dayMap.get(d);
-        const isLianban = isLianbanMap.get(d);
-        const [startStr,endStr] = timeStr.split("-");
-        const start = time2h(startStr);
-        const end = time2h(endStr);
-        const rawTotal = end - start;
-
-        let deduct;
-        if(isLianban){
-            deduct = 1;
+    const lines = batchText.split('\n').map(x=>x.trim()).filter(x=>x);
+    let totalWorkHour = 0;
+    let totalDailyWage = 0;
+    for(let line of lines){
+        let parts = line.split(/\s+/);
+        let dayNum = parts[0];
+        let timeStr = parts[1];
+        let isLian = timeStr.toLowerCase().endsWith('l');
+        if(isLian) timeStr = timeStr.slice(0,-1);
+        let [startStr,endStr] = timeStr.split('-');
+        let startMin = timeToMin(startStr);
+        let endMin = timeToMin(endStr);
+        let allMin = endMin - startMin;
+        let workHourAll = allMin / 60;
+        let finalHour;
+        if(isLian){
+            // 连班扣半小时吃饭
+            finalHour = (allMin - 30)/60;
         }else{
-            deduct = 1;
-            if(end>19) deduct +=0.5;
+            finalHour = workHourAll;
         }
-        const workH = rawTotal - deduct;
+        let dayWage = finalHour * hourPrice;
+        totalWorkHour += finalHour;
+        totalDailyWage += dayWage;
 
-        let otH = 0;
-        let otMoney = 0;
-        const dayStr = String(d);
-        if(holidaySet.has(dayStr)){
-            otH = workH;
-            otMoney = otH * priceHoliday;
-            holidayOtHour += otH;
-            holidayOtMoney += otMoney;
-            htmlTable += `<tr class="holiday-row">`;
-        }else{
-            otH = Math.max(0, workH - 8);
-            otMoney = otH * priceNormalOt;
-            normalOtHour += otH;
-            normalOtMoney += otMoney;
-            htmlTable += `<tr>`;
+        // 生成行
+        let tr = document.createElement('tr');
+        let tdDay = document.createElement('td');
+        tdDay.innerText = dayNum;
+        if(isLian){
+            let spanTag = document.createElement('span');
+            spanTag.className = 'tag-lian';
+            spanTag.innerText = '连';
+            tdDay.appendChild(spanTag);
         }
-        if(isLianban){
-            htmlTable += `<td class="date-cell">${d}<span class="tag-lian">连</span></td>`;
-        }else{
-            htmlTable += `<td>${d}</td>`;
-        }
-        htmlTable += `
-            <td>${timeStr}</td>
-            <td>${formatHour(rawTotal)}</td>
-            <td>-${formatHour(deduct)}</td>
-            <td>${formatHour(workH)}</td>
-            <td>${formatHour(otH)}</td>
-            <td>${formatMoney(otMoney)}</td>
-        </tr>`;
+        tr.appendChild(tdDay);
+
+        let tdTime = document.createElement('td');
+        tdTime.innerText = startStr + '-' + endStr + (isLian?'(连)':'');
+        tr.appendChild(tdTime);
+
+        let tdAllH = document.createElement('td');
+        tdAllH.innerText = formatNum(workHourAll);
+        tr.appendChild(tdAllH);
+
+        let tdAfterEat = document.createElement('td');
+        tdAfterEat.innerText = formatNum(finalHour);
+        tr.appendChild(tdAfterEat);
+
+        let tdWage = document.createElement('td');
+        tdWage.innerText = formatNum(dayWage);
+        tr.appendChild(tdWage);
+        tbody.appendChild(tr);
     }
-    htmlTable += `</tbody></table>`;
-    document.getElementById("countDay").textContent = dayList.length;
-
-    const totalOtMoney = normalOtMoney + holidayOtMoney;
-    const otherSubsidy = Number(document.getElementById("otherSubsidy").value)||0;
-    const mealDay = Number(document.getElementById("mealDay").value);
-    const mealTotal = isNaN(mealDay) || mealDay <= 0 ? 0 : mealDay * mealPrice;
-
-    let preTaxIncome = baseSalary + totalOtMoney + otherSubsidy + mealTotal;
-    const taxableIncome = Math.max(0, preTaxIncome - taxThreshold);
-    const tax = calcPersonalTax(taxableIncome);
-    const afterTaxIncome = preTaxIncome - tax;
-
-    let summaryHtml = `
-    <div class="summary-box">
-法定节假日加班时长：${formatHour(holidayOtHour)}h<br>
-法定节假日加班费：${formatMoney(holidayOtMoney)}元<br>
-<br>
-平日加班时长：${formatHour(normalOtHour)}h<br>
-平日加班费：${formatMoney(normalOtMoney)}元<br>
-<br>
-全部加班费合计：${formatMoney(totalOtMoney)}元<br>
-底薪：${formatMoney(baseSalary)}元<br>
-(房补/绩效)：${formatMoney(otherSubsidy)}元<br>
-    `;
-    if(mealTotal>0){
-        summaryHtml += `饭补：${formatMoney(mealTotal)}元<br>`;
+    // 饭补提醒
+    if(isNaN(mealDayInput) || mealDayInput <=0){
+        warnBox.innerText = '⚠️ 饭补天数还没有填写';
     }
-    summaryHtml += `
-税前收入：${formatMoney(preTaxIncome)}元<br>
-个税：${formatMoney(tax)}元<br>
-税后收入：${formatMoney(afterTaxIncome)}元<br>
-<br>
-注：个税按3%简易估算，以工资条为准
-</div>`;
+    const mealTotal = (mealDayInput||0) * mealPrice;
+    const monthGross = basePay + totalDailyWage + extraSubsidy + mealTotal;
+    // 累计应税（简易）
+    const monthsCount = curMonth - entryMonth + 1;
+    const taxable = monthGross * monthsCount - 5000 * monthsCount;
+    const tax = calcTax(taxable / monthsCount) * monthsCount;
+    const netPay = monthGross - tax;
 
-    if(isNaN(mealDay) || mealDay <= 0){
-        summaryHtml += `<div class="warn-tip">⚠️ 饭补未计入</div>`;
-    }
-
-    document.getElementById("resultArea").innerHTML = htmlTable + summaryHtml;
+    sumBox.innerHTML = `
+总工时：${formatNum(totalWorkHour)} h<br>
+工时工资合计：${formatNum(totalDailyWage)} 元<br>
+底薪：${formatNum(basePay)} 元<br>
+额外补贴(房补/绩效)：${formatNum(extraSubsidy)} 元<br>
+饭补：${formatNum(mealTotal)} 元（${mealDayInput||0}天 × ${mealPrice}元）<br>
+✅ 本月应发合计：${formatNum(monthGross)} 元<br>
+个税（累计3%）：${formatNum(tax)} 元<br>
+✅ 本月实发工资：<b style="color:#c82423;font-size:16px">${formatNum(netPay)}</b> 元
+    `
 }
 
-document.getElementById("calcBtn").onclick = calc;
-document.getElementById("clearBtn").onclick = ()=>{
-    document.getElementById("rawData").value = "";
-    document.getElementById("otherSubsidy").value = 0;
-    document.getElementById("mealDay").value = "";
-    document.getElementById("resultArea").innerHTML = "";
-    document.getElementById("countDay").textContent="0";
+function clearTable(){
+    tbody.innerHTML = '';
+    warnBox.innerText = '';
+    sumBox.innerText = '';
 }
-
-window.addEventListener('load', () => {
-  updateLocalTime();
-});
-setInterval(updateLocalTime,1000);
 </script>
 </body>
 </html>
